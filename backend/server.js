@@ -23,7 +23,7 @@ const cors = require('cors'); // Require the cors package
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3003;
+const PORT = 3003; // Confirming the PORT variable setting to ensure we're using port 3003
 
 // Middleware
 app.use(cors()); // Apply CORS middleware globally
@@ -58,6 +58,18 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
         console.error('Error creating logs table:', err.message);
       } else {
         console.log('Logs table ready');
+        
+        // Now that DB and table are ready, initialize dependent things
+        app.locals.db = db;       // Make DB available to routes
+        app.locals.logEvent = logEvent; // Make logEvent available
+        
+        initializeTestDevices(); // Initialize devices (which logs)
+        
+        // Start the server only after DB and devices are ready
+        app.listen(PORT, () => {
+          console.log(`Server running on port ${PORT}`);
+          console.log('RV-C MQTT Control Application is ready.'); // Updated message
+        });
       }
     });
   }
@@ -589,11 +601,9 @@ function logEvent(deviceId, deviceType, event, status) {
 };
 
 // Attach dependencies to app.locals *after* they are initialized
-app.locals.db = db;
 app.locals.devices = devices;
 app.locals.mqttClient = mqttClient;
 app.locals.handleCommand = handleCommand;
-app.locals.logEvent = logEvent;
 app.locals.RVC_COMMAND_TOPIC = RVC_COMMAND_TOPIC;
 app.locals.RVC_STATUS_TOPIC = RVC_STATUS_TOPIC;
 
@@ -619,9 +629,11 @@ app.use((req, res, next) => {
 // Import and use route modules *after* initialization and middleware
 const apiRoutes = require('./routes/api'); 
 const deviceRoutes = require('./routes/devices');
+const deviceApiRoutes = require('./routes/device-api');
 
 app.use('/api', apiRoutes); // Mount API routes under /api
-app.use('/', deviceRoutes);  // Mount device routes under /
+app.use('/api', deviceApiRoutes); // Mount enhanced device API routes under /api
+app.use('/', deviceRoutes);  // Mount legacy device routes under /
 
 // MQTT Connection Events
 mqttClient.on('connect', () => {
@@ -713,14 +725,6 @@ function initializeTestDevices() {
     logEvent(deviceId, state.deviceType, 'initialized', state);
   }
 }
-
-initializeTestDevices();
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('RV-C MQTT Control Application is starting up...');
-});
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
