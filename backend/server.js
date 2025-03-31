@@ -3,13 +3,21 @@
  * Main server file
  */
 
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+
+require('dotenv').config({
+  path: process.env.NODE_ENV === 'production' 
+    ? path.join(__dirname, '.env') 
+    : (fs.existsSync(path.join(__dirname, '.env.local')) 
+        ? path.join(__dirname, '.env.local') 
+        : path.join(__dirname, '.env'))
+});
 const express = require('express');
 const mqtt = require('mqtt');
 const basicAuth = require('express-basic-auth');
-// SQLite3 will be implemented in a future task
-// const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// SQLite3 is used for logging functionality
+const sqlite3 = require('sqlite3').verbose();
 
 // Initialize Express app
 const app = express();
@@ -19,14 +27,56 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Request received: ${req.method} ${req.path}`);
+  next();
+});
+
 // Basic authentication
-app.use(basicAuth({
-  users: { 
-    [process.env.ADMIN_USERNAME || 'admin']: process.env.ADMIN_PASSWORD || 'rvpass' 
-  },
-  challenge: true,
-  realm: 'RV-C Control Application'
-}));
+app.use((req, res, next) => {
+  // Skip authentication for routes with their own auth
+  if (req.path === '/logs' || req.path === '/api/logs') {
+    return next();
+  }
+  
+  // Apply basic auth to all other routes
+  basicAuth({
+    users: { 
+      [process.env.ADMIN_USERNAME || 'admin']: process.env.ADMIN_PASSWORD || 'rvpass' 
+    },
+    challenge: true,
+    realm: 'RV-C Control Application'
+  })(req, res, next);
+});
+
+// Initialize SQLite database for logging
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'logs.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Error opening database:', err.message);
+  } else {
+    console.log('Connected to the SQLite database');
+    
+    // Create logs table if it doesn't exist
+    db.run(`
+      CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        deviceId TEXT NOT NULL,
+        deviceType TEXT NOT NULL,
+        event TEXT NOT NULL,
+        status TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (err) {
+        console.error('Error creating logs table:', err.message);
+      } else {
+        console.log('Logs table ready');
+      }
+    });
+  }
+});
 
 // MQTT Client setup
 const mqttOptions = {
@@ -78,25 +128,91 @@ mqttClient.on('reconnect', () => {
 });
 
 mqttClient.on('message', (topic, message) => {
+  console.log(`Message received on topic ${topic}: ${message.toString()}`);
+  
   try {
-    console.log(`Received message on topic ${topic}: ${message.toString()}`);
+    // Parse the message
+    const payload = JSON.parse(message.toString());
     
-    // Handle different topic messages
+    // Handle different topic types
     if (topic.startsWith(RVC_COMMAND_TOPIC)) {
-      handleCommand(topic, message);
+      // Handle commands
+      const deviceId = topic.split('/')[1];
+      handleCommand(deviceId, payload);
+    } else if (topic.startsWith(RVC_STATUS_TOPIC) && topic.endsWith('/state')) {
+      // Handle device status updates
+      const deviceId = topic.split('/')[1];
+      
+      // Update device state in memory
+      const currentState = devices.get(deviceId) || {};
+      const updatedState = { ...currentState, ...payload };
+      devices.set(deviceId, updatedState);
+      
+      // Log the device state update from MQTT
+      const deviceType = updatedState.deviceType || 'unknown';
+      logDeviceEvent(deviceId, deviceType, 'mqtt_state_update', updatedState);
+      
+      console.log(`Updated state for ${deviceId}:`, updatedState);
     } else if (topic === 'homeassistant/status') {
-      if (message.toString() === 'online') {
-        // Home Assistant came online, republish discovery information
-        publishDiscoveryInformation();
+      // Handle Home Assistant status changes
+      if (payload === 'online') {
+        console.log('Home Assistant is online, publishing discovery information');
+        publishDiscoveryInfo();
       }
     }
   } catch (error) {
-    console.error('Error processing MQTT message:', error);
+    console.error('Error handling MQTT message:', error);
   }
 });
 
 // Device storage
 const devices = new Map();
+
+// Initialize test devices
+function initializeTestDevices() {
+  // Add test devices
+  devices.set('dimmer1', { deviceId: 'dimmer1', deviceType: 'dimmer', brightness: 75 });
+  devices.set('vent1', { deviceId: 'vent1', deviceType: 'vent', position: 75 });
+  devices.set('hvac1', { deviceId: 'hvac1', deviceType: 'hvac', mode: 'cool' });
+  devices.set('waterHeater1', { deviceId: 'waterHeater1', deviceType: 'waterHeater', mode: 'electric' });
+  devices.set('generator1', { deviceId: 'generator1', deviceType: 'generator', command: 'start', status: 'running' });
+  
+  // Log the initialization
+  console.log('Test devices initialized:');
+  console.log(Array.from(devices.entries()));
+  
+  // Publish initial device states to MQTT
+  for (const [deviceId, state] of devices.entries()) {
+    const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
+    mqttClient.publish(topic, JSON.stringify(state), { retain: true });
+    
+    // Log the device initialization
+    logDeviceEvent(deviceId, state.deviceType, 'initialized', state);
+  }
+}
+
+// Logging function to record device events
+const logDeviceEvent = (deviceId, deviceType, event, status) => {
+  if (!db) {
+    console.error('Database not initialized, cannot log event');
+    return;
+  }
+  
+  const stmt = db.prepare(`
+    INSERT INTO logs (deviceId, deviceType, event, status, timestamp)
+    VALUES (?, ?, ?, ?, datetime('now'))
+  `);
+  
+  stmt.run(deviceId, deviceType, event, JSON.stringify(status), (err) => {
+    if (err) {
+      console.error('Error logging device event:', err.message);
+    } else {
+      console.log(`Logged event for ${deviceId}: ${event}`);
+    }
+  });
+  
+  stmt.finalize();
+};
 
 // Define supported device types and their commands
 const deviceTypes = {
@@ -117,6 +233,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'dimmer', 'brightness_set', updatedState);
+          
           return { success: true, message: `Set brightness to ${parameters.brightness}%` };
         }
       },
@@ -131,6 +249,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'dimmer', 'turned_on', updatedState);
+          
           return { success: true, message: 'Turned on dimmer' };
         }
       },
@@ -144,6 +264,8 @@ const deviceTypes = {
           // Publish the updated state to MQTT
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
+          
+          logDeviceEvent(deviceId, 'dimmer', 'turned_off', updatedState);
           
           return { success: true, message: 'Turned off dimmer' };
         }
@@ -165,6 +287,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'vent', 'position_set', updatedState);
+          
           return { success: true, message: `Set vent position to ${parameters.position}%` };
         }
       },
@@ -179,6 +303,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'vent', 'opened', updatedState);
+          
           return { success: true, message: 'Opened vent' };
         }
       },
@@ -192,6 +318,8 @@ const deviceTypes = {
           // Publish the updated state to MQTT
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
+          
+          logDeviceEvent(deviceId, 'vent', 'closed', updatedState);
           
           return { success: true, message: 'Closed vent' };
         }
@@ -214,6 +342,8 @@ const deviceTypes = {
           // Publish the updated state to MQTT
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
+          
+          logDeviceEvent(deviceId, 'temperatureSensor', 'calibrated', updatedState);
           
           return { success: true, message: `Set calibration offset to ${parameters.offset}` };
         }
@@ -240,6 +370,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'hvac', 'mode_set', updatedState);
+          
           return { success: true, message: `Set HVAC mode to ${parameters.mode}` };
         }
       },
@@ -260,6 +392,8 @@ const deviceTypes = {
           // Publish the updated state to MQTT
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
+          
+          logDeviceEvent(deviceId, 'hvac', 'fan_mode_set', updatedState);
           
           return { success: true, message: `Set fan mode to ${parameters.fanMode}` };
         }
@@ -286,6 +420,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'hvac', 'temperature_set', updatedState);
+          
           return { success: true, message: `Set ${parameters.mode} temperature to ${parameters.temperature}°C` };
         }
       }
@@ -311,6 +447,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'waterHeater', 'mode_set', updatedState);
+          
           return { success: true, message: `Set water heater mode to ${parameters.mode}` };
         }
       },
@@ -327,6 +465,8 @@ const deviceTypes = {
           // Publish the updated state to MQTT
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
+          
+          logDeviceEvent(deviceId, 'waterHeater', 'temperature_set', updatedState);
           
           return { success: true, message: `Set water heater temperature to ${parameters.temperature}°C` };
         }
@@ -361,6 +501,8 @@ const deviceTypes = {
           const topic = `${RVC_STATUS_TOPIC}/${deviceId}/state`;
           mqttClient.publish(topic, JSON.stringify(updatedState), { retain: true });
           
+          logDeviceEvent(deviceId, 'generator', 'command_set', updatedState);
+          
           return { success: true, message: `Set generator command to ${parameters.command}` };
         }
       }
@@ -368,40 +510,65 @@ const deviceTypes = {
   }
 };
 
-// Command parser function
-function parseCommand(commandData) {
-  // Validate required fields
-  if (!commandData.deviceId) {
-    return { success: false, error: 'Missing deviceId' };
+// Function to handle device commands
+function handleCommand(deviceId, payload) {
+  try {
+    console.log(`Processing command for device ${deviceId}:`, payload);
+    
+    // Extract command and parameters
+    const { command, ...parameters } = payload;
+    
+    if (!command) {
+      console.error('No command specified in payload');
+      return { success: false, error: 'No command specified' };
+    }
+    
+    // Get the device state
+    const deviceState = devices.get(deviceId) || {};
+    const deviceType = deviceState.deviceType;
+    
+    if (!deviceType) {
+      console.error(`Unknown device type for ${deviceId}`);
+      return { success: false, error: 'Unknown device type' };
+    }
+    
+    // Check if the device type is supported
+    if (!deviceTypes[deviceType]) {
+      console.error(`Unsupported device type: ${deviceType}`);
+      return { success: false, error: `Unsupported device type: ${deviceType}` };
+    }
+    
+    // Check if the command is supported for this device type
+    if (!deviceTypes[deviceType].commands[command]) {
+      console.error(`Unsupported command ${command} for device type ${deviceType}`);
+      return { success: false, error: `Unsupported command: ${command}` };
+    }
+    
+    // Validate command parameters
+    const commandDef = deviceTypes[deviceType].commands[command];
+    const validationResult = validateParameters(parameters, commandDef.parameters);
+    
+    if (!validationResult.valid) {
+      console.error(`Parameter validation failed: ${validationResult.error}`);
+      return { success: false, error: validationResult.error };
+    }
+    
+    // Execute the command
+    const result = commandDef.execute(deviceId, parameters);
+    
+    return result;
+  } catch (error) {
+    console.error('Error handling command:', error);
+    return { success: false, error: error.message };
   }
-  
-  if (!commandData.deviceType) {
-    return { success: false, error: 'Missing deviceType' };
-  }
-  
-  if (!commandData.command) {
-    return { success: false, error: 'Missing command' };
-  }
-  
-  // Check if device type is supported
-  if (!deviceTypes[commandData.deviceType]) {
-    return { success: false, error: `Unsupported device type: ${commandData.deviceType}` };
-  }
-  
-  // Check if command is supported for this device type
-  const deviceType = deviceTypes[commandData.deviceType];
-  if (!deviceType.commands[commandData.command]) {
-    return { success: false, error: `Unsupported command for device type ${commandData.deviceType}: ${commandData.command}` };
-  }
-  
-  // Validate command parameters
-  const command = deviceType.commands[commandData.command];
-  const parameters = commandData.parameters || {};
-  
-  for (const [paramName, paramConfig] of Object.entries(command.parameters)) {
+}
+
+// Function to validate command parameters
+function validateParameters(parameters, parameterDefinitions) {
+  for (const [paramName, paramConfig] of Object.entries(parameterDefinitions)) {
     // Check required parameters
     if (paramConfig.required && parameters[paramName] === undefined) {
-      return { success: false, error: `Missing required parameter: ${paramName}` };
+      return { valid: false, error: `Missing required parameter: ${paramName}` };
     }
     
     // Skip validation for optional parameters that aren't provided
@@ -411,123 +578,37 @@ function parseCommand(commandData) {
     
     // Validate parameter type
     if (paramConfig.type === 'number' && typeof parameters[paramName] !== 'number') {
-      return { success: false, error: `Parameter ${paramName} must be a number` };
+      return { valid: false, error: `Parameter ${paramName} must be a number` };
     }
     
     if (paramConfig.type === 'string' && typeof parameters[paramName] !== 'string') {
-      return { success: false, error: `Parameter ${paramName} must be a string` };
+      return { valid: false, error: `Parameter ${paramName} must be a string` };
     }
     
     // Validate parameter range for numbers
     if (paramConfig.type === 'number') {
       if (paramConfig.min !== undefined && parameters[paramName] < paramConfig.min) {
-        return { success: false, error: `Parameter ${paramName} must be at least ${paramConfig.min}` };
+        return { valid: false, error: `Parameter ${paramName} must be at least ${paramConfig.min}` };
       }
       
       if (paramConfig.max !== undefined && parameters[paramName] > paramConfig.max) {
-        return { success: false, error: `Parameter ${paramName} must be at most ${paramConfig.max}` };
+        return { valid: false, error: `Parameter ${paramName} must be at most ${paramConfig.max}` };
       }
     }
     
     // Validate enum values for strings
     if (paramConfig.type === 'string' && paramConfig.enum) {
       if (!paramConfig.enum.includes(parameters[paramName])) {
-        return { success: false, error: `Parameter ${paramName} must be one of: ${paramConfig.enum.join(', ')}` };
+        return { valid: false, error: `Parameter ${paramName} must be one of: ${paramConfig.enum.join(', ')}` };
       }
     }
   }
   
-  return { success: true, command };
-}
-
-// Execute command function
-function executeCommand(commandData) {
-  const parseResult = parseCommand(commandData);
-  
-  if (!parseResult.success) {
-    return parseResult;
-  }
-  
-  try {
-    // Execute the command
-    const result = parseResult.command.execute(commandData.deviceId, commandData.parameters || {});
-    
-    // Generate a command ID for tracking
-    const commandId = Date.now().toString();
-    
-    // Store command result (in a real implementation, this would be in a database)
-    const commandResults = {
-      ...result,
-      commandId,
-      deviceId: commandData.deviceId,
-      deviceType: commandData.deviceType,
-      command: commandData.command,
-      parameters: commandData.parameters || {},
-      timestamp: new Date().toISOString()
-    };
-    
-    return { success: true, commandId, ...result };
-  } catch (error) {
-    console.error('Error executing command:', error);
-    return { success: false, error: 'Command execution failed' };
-  }
-}
-
-// Function to handle RV-C commands
-function handleCommand(topic, message) {
-  try {
-    const commandData = JSON.parse(message.toString());
-    console.log('Processing command:', commandData);
-    
-    // Parse and validate the command
-    const parseResult = parseCommand(commandData);
-    
-    if (!parseResult.success) {
-      return parseResult;
-    }
-    
-    // Execute the command
-    const result = executeCommand(commandData);
-    
-    // Publish command response
-    mqttClient.publish(`${RVC_STATUS_TOPIC}/${parseResult.command.deviceId}/response`, JSON.stringify({
-      success: result.success,
-      commandId: result.commandId,
-      result: result,
-      timestamp: new Date().toISOString()
-    }));
-    
-    return result;
-  } catch (error) {
-    console.error('Error handling command:', error);
-    
-    // Publish error response if deviceId is available
-    if (message && typeof message.toString === 'function') {
-      try {
-        const commandData = JSON.parse(message.toString());
-        if (commandData.deviceId) {
-          mqttClient.publish(`${RVC_STATUS_TOPIC}/${commandData.deviceId}/response`, JSON.stringify({
-            success: false,
-            commandId: commandData.commandId || Date.now().toString(),
-            error: error.message,
-            timestamp: new Date().toISOString()
-          }));
-        }
-      } catch (parseError) {
-        console.error('Error parsing command message for error response:', parseError);
-      }
-    }
-    
-    return {
-      success: false,
-      error: error.message,
-      timestamp: new Date().toISOString()
-    };
-  }
+  return { valid: true };
 }
 
 // Function to publish discovery information for Home Assistant
-function publishDiscoveryInformation() {
+function publishDiscoveryInfo() {
   console.log('Publishing discovery information for Home Assistant');
   
   // Publish discovery information for each device
@@ -562,79 +643,219 @@ app.get('/devices', (req, res) => {
   res.json(deviceList);
 });
 
-// POST /command - Send commands to RV-C devices
+// POST /command - Send a command to a device
 app.post('/command', (req, res) => {
-  try {
-    const { deviceId, deviceType, command, parameters } = req.body;
-    
-    if (!deviceId || !command) {
-      return res.status(400).json({ error: 'Missing required fields: deviceId and command' });
-    }
-    
-    // Create command data
-    const commandData = {
-      deviceId,
-      deviceType,
-      command,
-      parameters: parameters || {},
-      commandId: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-      timestamp: new Date().toISOString()
-    };
-    
-    try {
-      // Parse and validate the command locally before publishing
-      const parseResult = parseCommand(commandData);
-      
-      if (!parseResult.success) {
-        return res.status(400).json({ error: parseResult.error });
-      }
-      
-      // Publish command to MQTT
-      const commandTopic = `${RVC_COMMAND_TOPIC}/${deviceId}`;
-      mqttClient.publish(commandTopic, JSON.stringify(commandData));
-      
-      res.status(202).json({ 
-        message: 'Command sent successfully',
-        commandId: commandData.commandId
-      });
-    } catch (validationError) {
-      res.status(400).json({ 
-        error: validationError.message,
-        commandId: commandData.commandId
-      });
-    }
-  } catch (error) {
-    console.error('Error sending command:', error);
-    res.status(500).json({ error: 'Failed to send command' });
+  const { deviceId, command, parameters, ...otherParams } = req.body;
+  
+  if (!deviceId) {
+    return res.status(400).json({ error: 'Missing deviceId' });
   }
+  
+  if (!command) {
+    return res.status(400).json({ error: 'Missing command' });
+  }
+  
+  // Get the device state
+  const deviceState = devices.get(deviceId);
+  
+  if (!deviceState || !deviceState.deviceType) {
+    return res.status(404).json({ error: `Unknown device: ${deviceId}` });
+  }
+  
+  // Prepare command payload
+  // If parameters object is provided, use it, otherwise use other params directly
+  const commandParams = parameters || otherParams;
+  
+  // Publish command to MQTT
+  const topic = `${RVC_COMMAND_TOPIC}/${deviceId}`;
+  const payload = { command, ...commandParams };
+  
+  mqttClient.publish(topic, JSON.stringify(payload), { qos: 1 }, (err) => {
+    if (err) {
+      console.error('Error publishing command:', err);
+      return res.status(500).json({ error: 'Failed to publish command' });
+    }
+    
+    // Process the command directly
+    const result = handleCommand(deviceId, payload);
+    
+    // Return the result
+    if (result.success) {
+      res.json({ success: true, message: result.message });
+    } else {
+      res.status(400).json({ error: result.error });
+    }
+  });
 });
 
 // GET /command/:commandId - Check command status
 app.get('/command/:commandId', (req, res) => {
-  // In a real implementation, we would check a command status database
-  // For now, we'll return a simulated response
-  const { commandId } = req.params;
-  
-  if (!commandId) {
-    return res.status(400).json({ error: 'Missing commandId parameter' });
+  // This endpoint is deprecated in the new implementation
+  res.status(410).json({ 
+    success: false, 
+    error: 'This endpoint is deprecated. Commands are now processed immediately.' 
+  });
+});
+
+// GET /api/logs - Get logs as JSON
+app.get('/api/logs', (req, res) => {
+  // Check for basic auth
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.set('WWW-Authenticate', 'Basic realm="RV-C MQTT Control Application"');
+    return res.status(401).send('Authentication required');
   }
   
-  // Simulate a random command status (success/failure)
-  const success = Math.random() > 0.1; // 90% success rate
+  // Decode and verify credentials
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
   
-  res.json({
-    commandId,
-    status: success ? 'completed' : 'failed',
-    timestamp: new Date().toISOString(),
-    message: success ? 'Command executed successfully' : 'Command execution failed'
+  const validUsername = process.env.ADMIN_USERNAME || 'admin';
+  const validPassword = process.env.ADMIN_PASSWORD || 'rvpass';
+  
+  if (username !== validUsername || password !== validPassword) {
+    res.set('WWW-Authenticate', 'Basic realm="RV-C MQTT Control Application"');
+    return res.status(401).send('Invalid credentials');
+  }
+  
+  // Get query parameters for filtering
+  const { deviceId, deviceType, days = 7, limit = 100 } = req.query;
+  
+  // Calculate the date for filtering
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - parseInt(days, 10));
+  const formattedDate = daysAgo.toISOString().split('T')[0];
+  
+  // Build the query with optional filters
+  let query = `
+    SELECT id, deviceId, deviceType, event, status, timestamp
+    FROM logs
+    WHERE timestamp >= datetime('${formattedDate}')
+  `;
+  
+  const queryParams = [];
+  
+  // Add filters if provided
+  if (deviceId) {
+    query += ' AND deviceId = ?';
+    queryParams.push(deviceId);
+  }
+  
+  if (deviceType) {
+    query += ' AND deviceType = ?';
+    queryParams.push(deviceType);
+  }
+  
+  // Add ordering and limit
+  query += ' ORDER BY timestamp DESC LIMIT ?';
+  queryParams.push(parseInt(limit, 10));
+  
+  // Execute the query
+  db.all(query, queryParams, (err, rows) => {
+    if (err) {
+      console.error('Error retrieving logs:', err.message);
+      return res.status(500).json({ error: 'Failed to retrieve logs' });
+    }
+    
+    // Process the logs to parse JSON status
+    const logs = rows.map(row => {
+      try {
+        if (typeof row.status === 'string') {
+          row.status = JSON.parse(row.status);
+        }
+      } catch (e) {
+        // If parsing fails, keep the original string
+        console.error('Error parsing status JSON:', e.message);
+      }
+      
+      return row;
+    });
+    
+    res.json({
+      success: true,
+      count: logs.length,
+      logs
+    });
   });
 });
 
 // GET /logs - Export logs as CSV
 app.get('/logs', (req, res) => {
-  // Will be implemented in Task 1.5
-  res.status(501).json({ message: 'Not implemented yet' });
+  // Check for basic auth
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.set('WWW-Authenticate', 'Basic realm="RV-C MQTT Control Application"');
+    return res.status(401).send('Authentication required');
+  }
+  
+  // Decode and verify credentials
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
+  
+  const validUsername = process.env.ADMIN_USERNAME || 'admin';
+  const validPassword = process.env.ADMIN_PASSWORD || 'rvpass';
+  
+  if (username !== validUsername || password !== validPassword) {
+    res.set('WWW-Authenticate', 'Basic realm="RV-C MQTT Control Application"');
+    return res.status(401).send('Invalid credentials');
+  }
+  
+  // Get the date 7 days ago (as per PRD requirements)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const formattedDate = sevenDaysAgo.toISOString().split('T')[0];
+  
+  // Build the query to get logs from the last 7 days
+  const query = `
+    SELECT id, deviceId, deviceType, event, status, timestamp
+    FROM logs
+    WHERE timestamp >= datetime('${formattedDate}')
+    ORDER BY timestamp DESC
+  `;
+  
+  // Execute the query
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error('Error retrieving logs for CSV export:', err.message);
+      return res.status(500).json({ error: 'Failed to retrieve logs for export' });
+    }
+    
+    // Set headers for CSV download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="rv-c-logs.csv"');
+    
+    // Write CSV header
+    res.write('ID,DeviceID,DeviceType,Event,Status,Timestamp\n');
+    
+    // Write each row as CSV
+    rows.forEach(row => {
+      // Format the status as a string, escaping any quotes
+      let statusStr = '';
+      try {
+        // If status is a JSON string, parse it and then stringify it to ensure proper formatting
+        if (typeof row.status === 'string') {
+          statusStr = JSON.stringify(JSON.parse(row.status)).replace(/"/g, '""');
+        } else {
+          statusStr = JSON.stringify(row.status).replace(/"/g, '""');
+        }
+      } catch (e) {
+        // If parsing fails, use the original string
+        statusStr = row.status.replace(/"/g, '""');
+      }
+      
+      // Write the CSV row
+      res.write(`${row.id},"${row.deviceId}","${row.deviceType}","${row.event}","${statusStr}","${row.timestamp}"\n`);
+    });
+    
+    // End the response
+    res.end();
+  });
 });
+
+// Initialize test devices when the server starts
+initializeTestDevices();
 
 // Start the server
 app.listen(PORT, () => {
