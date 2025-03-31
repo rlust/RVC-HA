@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  # MQTT Broker (Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"  # MQTT
+      - "9002:9002"  # WebSockets
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+
+  # Backend API Server
+  backend:
+    build: 
+      context: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MQTT_BROKER_URL=mqtt://mosquitto:1883
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=rvpass
+      - DB_PATH=":memory:"
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
+
+  # Home Assistant
+  homeassistant:
+    image: homeassistant/home-assistant:latest
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./homeassistant:/config
+    environment:
+      - TZ=America/New_York
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
