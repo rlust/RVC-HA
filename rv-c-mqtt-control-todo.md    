@@ -1,0 +1,171 @@
+# To-Do List: Building the RV-C MQTT Control Application with Home Assistant Integration
+
+## Overview
+This to-do list provides a step-by-step guide to develop the RV-C MQTT Control Application, integrating RV-C devices (dimmers, vents, sensors, HVAC) with MQTT and Home Assistant. The tasks are grouped by milestones from the PRD, with estimated durations for a single developer. Total estimated time: ~2.5 weeks (assuming full-time effort).
+
+---
+
+## Milestone 1: Backend Setup (1 Week)
+
+### Task 1.1: Set Up Development Environment
+- [ ] Install Node.js (v16 or later) on development machine.
+- [ ] Install Docker and Docker Compose for containerized deployment.
+- [ ] Create project directory (e.g., `rv-c-mqtt-control`) and initialize with `npm init`.
+- **Duration**: 1 hour
+
+### Task 1.2: Install Backend Dependencies
+- [ ] Run `npm install express mqtt express-basic-auth sqlite3` in project directory.
+- [ ] Verify installations with `npm list`.
+- **Duration**: 30 minutes
+
+### Task 1.3: Implement MQTT Connection
+- [ ] Create `server.js` and add MQTT client setup with `mqtt.connect('mqtt://mosquitto:1883')`.
+- [ ] Add subscription to `rvc/status/#` and `homeassistant/+/+/command`.
+- [ ] Test connection with a local Mosquitto instance (`docker run -p 1883:1883 eclipse-mosquitto`).
+- **Duration**: 4 hours
+
+### Task 1.4: Add RV-C Device Support
+- [ ] Implement message parsing for dimmers (`DC_DIMMER_STATUS_3`), vents (`VENT_FAN_STATUS_2`), sensors (`THERMOSTAT_AMBIENT_STATUS`), and HVAC (`THERMOSTAT_STATUS_1`).
+- [ ] Add command formatting for `DC_DIMMER_COMMAND_2`, `VENT_FAN_COMMAND_1`, `THERMOSTAT_COMMAND_1`.
+- [ ] Store device states in a `Map` (`devices`).
+- **Duration**: 8 hours
+
+### Task 1.5: Set Up Logging with SQLite
+- [ ] Initialize SQLite in-memory database with `CREATE TABLE logs`.
+- [ ] Add logic to log status updates to `logs` table on MQTT message receipt.
+- [ ] Test logging with sample RV-C messages.
+- **Duration**: 4 hours
+
+### Task 1.6: Implement Basic Authentication
+- [ ] Add `express-basic-auth` middleware with `users: { 'admin': 'rvpass' }`.
+- [ ] Secure `/devices`, `/command`, and `/logs` endpoints.
+- [ ] Test authentication with Postman or curl.
+- **Duration**: 2 hours
+
+### Task 1.7: Define API Endpoints
+- [ ] Add `GET /devices` to return `devices` Map contents.
+- [ ] Add `POST /command` to send RV-C commands via MQTT.
+- [ ] Add `GET /logs` to export 7-day logs as CSV.
+- [ ] Test endpoints with sample requests.
+- **Duration**: 6 hours
+
+---
+
+## Milestone 2: Frontend Development (1 Week)
+
+### Task 2.1: Create Basic HTML Structure
+- [ ] Create `index.html` with container, inputs, table, and canvas elements.
+- [ ] Add inline CSS for mobile-friendly design (light blue `#e6f2ff`, dark blue headers `#336699`).
+- [ ] Test responsiveness on desktop and mobile (600px width).
+- **Duration**: 4 hours
+
+### Task 2.2: Add External Libraries
+- [ ] Include `Paho MQTT` via `<script src="https://unpkg.com/mqtt/dist/mqtt.min.js">`.
+- [ ] Include `Chart.js` via `<script src="https://cdn.jsdelivr.net/npm/chart.js">`.
+- [ ] Include `SheetJS` via `<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js">`.
+- [ ] Verify scripts load in browser console.
+- **Duration**: 1 hour
+
+### Task 2.3: Implement MQTT Client
+- [ ] Connect to MQTT broker (`wss://localhost:9001`) in `<script>` section.
+- [ ] Subscribe to `rvc/status/#` and `homeassistant/+/+/state`.
+- [ ] Test with sample messages from backend.
+- **Duration**: 4 hours
+
+### Task 2.4: Build Device Dashboard
+- [ ] Create table update function (`updateTable`) to display device states.
+- [ ] Format status for dimmers, vents, sensors, HVAC (e.g., “Temp: 72, Set: 68, Mode: Cool”).
+- [ ] Test with mock data.
+- **Duration**: 6 hours
+
+### Task 2.5: Add Control Panel
+- [ ] Implement inputs for Device ID, Value (brightness/speed/setpoint), and Option (on/off, AC/Heat).
+- [ ] Add `sendCommand` function to POST to `/command` with authentication header.
+- [ ] Test controls with backend.
+- **Duration**: 6 hours
+
+### Task 2.6: Add Temperature Graph
+- [ ] Initialize Chart.js line chart for temperature data (24-hour window).
+- [ ] Update chart on sensor status receipt (`updateChart`).
+- [ ] Test with sample temperature data.
+- **Duration**: 4 hours
+
+### Task 2.7: Implement Spreadsheet Export
+- [ ] Add `downloadSpreadsheet` function to export device states to Excel.
+- [ ] Include Device ID, Type, Status, Last Updated columns.
+- [ ] Test export with mock data.
+- **Duration**: 2 hours
+
+---
+
+## Milestone 3: Home Assistant Integration (3 Days)
+
+### Task 3.1: Configure MQTT Discovery
+- [ ] Add `registerDevices` function in `server.js` to publish configs for dimmers (light), vents (fan), sensors (sensor), HVAC (climate).
+- [ ] Test device appearance in Home Assistant UI (`http://localhost:8123`).
+- **Duration**: 4 hours
+
+### Task 3.2: Sync Device States
+- [ ] Implement `updateHomeAssistant` to publish states to `homeassistant/<type>/<deviceId>/state`.
+- [ ] Handle incoming HA commands in MQTT message handler.
+- [ ] Test state sync with Home Assistant dashboard.
+- **Duration**: 6 hours
+
+### Task 3.3: Add Notifications
+- [ ] Implement `checkAlerts` in `server.js` for temp > 85°F and unresponsiveness (>60s).
+- [ ] Publish alerts to `homeassistant/notify`.
+- [ ] Test notifications in Home Assistant.
+- **Duration**: 4 hours
+
+---
+
+## Milestone 4: Testing (2 Days)
+
+### Task 4.1: Functional Testing
+- [ ] Test dimmer, vent, sensor, and HVAC controls from frontend and Home Assistant.
+- [ ] Verify table and graph updates in real-time.
+- [ ] Confirm CSV and Excel exports contain correct data.
+- **Duration**: 6 hours
+
+### Task 4.2: Security Testing
+- [ ] Test authentication by accessing endpoints without credentials (should fail).
+- [ ] Verify access with `admin:rvpass` succeeds.
+- **Duration**: 2 hours
+
+### Task 4.3: Mobile Testing
+- [ ] Test UI on mobile browser (e.g., Chrome DevTools at 600px).
+- [ ] Adjust CSS if layout breaks.
+- **Duration**: 4 hours
+
+---
+
+## Milestone 5: Deployment (1 Day)
+
+### Task 5.1: Create Dockerfile
+- [ ] Write `Dockerfile` for backend (Node.js base, install dependencies, expose port 3000).
+- [ ] Test build with `docker build -t rv-c-backend .`.
+- **Duration**: 2 hours
+
+### Task 5.2: Set Up Docker Compose
+- [ ] Create `docker-compose.yml` with Mosquitto, backend, and Home Assistant services.
+- [ ] Configure Mosquitto with WebSocket support (port 9001).
+- [ ] Test with `docker-compose up --build`.
+- **Duration**: 4 hours
+
+### Task 5.3: Final Deployment
+- [ ] Update `index.html` MQTT URL to `wss://localhost:9001` and backend to `http://localhost:3000`.
+- [ ] Launch app in browser and verify full functionality.
+- **Duration**: 2 hours
+
+---
+
+## Additional Notes
+- **Total Duration**: ~13-15 working days (assuming 8-hour days).
+- **Prerequisites**: RV with CAN bus, CAN-to-MQTT gateway (e.g., Raspberry Pi with RV-C proxy).
+- **Testing Data**: Use mock RV-C messages if hardware unavailable (e.g., via MQTT CLI).
+- **Next Steps**: After completion, consider adding weather API integration or multi-RV support.
+
+---
+
+**Prepared by**: Grok (xAI)  
+**Date**: March 31, 2025
