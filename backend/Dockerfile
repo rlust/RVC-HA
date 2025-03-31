@@ -6,13 +6,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm install --production --no-optional
 
 # Copy application code
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 3002
 
 # Command to run the application
 CMD ["node", "server.js"]

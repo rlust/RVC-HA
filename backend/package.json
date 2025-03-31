@@ -21,7 +21,9 @@
   "dependencies": {
     "express": "^5.1.0",
     "express-basic-auth": "^1.2.1",
-    "mqtt": "^5.10.4",
+    "mqtt": "^5.10.4"
+  },
+  "optionalDependencies": {
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
