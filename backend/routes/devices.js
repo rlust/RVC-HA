@@ -26,14 +26,16 @@ router.get('/devices', (req, res) => {
 router.post('/command', (req, res) => {
   const { devices, mqttClient, handleCommand, logEvent, RVC_COMMAND_TOPIC } = req;
   
-  const { deviceId, command, parameters, ...otherParams } = req.body;
+  // Correctly extract deviceId and the nested payload object from the request body
+  const { deviceId, payload } = req.body;
   
   if (!deviceId) {
     return res.status(400).json({ error: 'Missing deviceId' });
   }
   
-  if (!command) {
-    return res.status(400).json({ error: 'Missing command' });
+  // Check for payload and command *inside* the payload object
+  if (!payload || !payload.command) {
+    return res.status(400).json({ error: 'Missing command in payload' });
   }
   
   // Get the device state
@@ -48,23 +50,17 @@ router.post('/command', (req, res) => {
     return res.status(400).json({ error: `Device ${deviceId} has no deviceType defined` });
   }
   
-  // Prepare command payload
-  const commandParams = parameters || otherParams;
+  // Log the command event using the received payload
+  // Note: handleCommand expects deviceType *not* to be in the payload it receives
+  // Ensure the payload passed to handleCommand doesn't include it if handleCommand adds it.
+  // Let's assume handleCommand manages deviceType based on deviceId lookup.
+  logEvent(deviceId, deviceState.deviceType, 'command_received', JSON.stringify(payload));
   
-  // Create the payload
-  const payload = { 
-    command, 
-    deviceType: deviceState.deviceType,
-    ...commandParams 
-  };
-
-  // Log the command event
-  logEvent(deviceId, deviceState.deviceType, 'command', JSON.stringify(payload));
-  
-  // Process the command directly using the function from app context
+  // Process the command using the correctly extracted payload object
+  // handleCommand expects a flat structure like { command: "...", param1: ... }
   const result = handleCommand(deviceId, payload);
   
-  // Publish command to MQTT after processing (if MQTT client is available)
+  // Publish the *original* received payload to MQTT 
   if (mqttClient && mqttClient.connected) {
       const topic = `${RVC_COMMAND_TOPIC}/${deviceId}`;
       mqttClient.publish(topic, JSON.stringify(payload), { qos: 1 }, (err) => {
@@ -80,25 +76,22 @@ router.post('/command', (req, res) => {
   const commandId = `cmd_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 5)}`;
   
   // Return the result in the expected format
-  if (result && result.success) {
+  if (result.success) {
     res.json({ 
-      success: true, 
-      message: "Command sent successfully", 
-      commandId: commandId,
-      result: result.message // Contains the message from handleCommand
-    });
-  } else if (result && result.error) {
-    res.status(400).json({ 
-      success: false,
-      error: result.error, // Contains the error from handleCommand
-      commandId: commandId
+        commandId: commandId,
+        deviceId: deviceId,
+        status: 'success',
+        message: result.message || 'Command processed successfully' 
     });
   } else {
-    // Should ideally not happen if handleCommand always returns success/error
-    res.status(500).json({ 
-      success: false,
-      error: 'Unknown error processing command in route handler',
-      commandId: commandId
+    // Use status code 400 for command processing errors (like invalid params)
+    // Use status code 500 for unexpected internal server errors
+    const statusCode = result.error?.includes('parameter') ? 400 : 500;
+    res.status(statusCode).json({ 
+        commandId: commandId,
+        deviceId: deviceId,
+        status: 'error', 
+        error: result.error || 'Failed to process command' 
     });
   }
 });

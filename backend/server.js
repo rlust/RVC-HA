@@ -16,14 +16,18 @@ require('dotenv').config({
 const express = require('express');
 const mqtt = require('mqtt');
 const basicAuth = require('express-basic-auth');
-// SQLite3 is used for logging functionality
 const sqlite3 = require('sqlite3').verbose();
+const cors = require('cors'); // Require the cors package
+
+// SQLite3 is used for logging functionality
 
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3003;
 
 // Middleware
+app.use(cors()); // Apply CORS middleware globally
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

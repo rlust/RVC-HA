@@ -65,3 +65,12 @@ homeassistant/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Log files
+*.log
+*.csv
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
