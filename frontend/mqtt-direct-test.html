@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Direct Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        #log { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .controls { margin: 20px 0; }
+        button { padding: 8px 16px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>MQTT WebSocket Connection Test</h1>
+    
+    <div class="controls">
+        <button onclick="runMQTTTests()">Run All Tests</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <h2>Console Output:</h2>
+    <pre id="log"></pre>
+    
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        const logEl = document.getElementById('log');
+        
+        // Log function to both console and UI
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+            const msg = `[${timestamp}] ${message}`;
+            console.log(msg);
+            
+            const entry = document.createElement('div');
+            entry.textContent = msg;
+            entry.className = type;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function clearLog() {
+            logEl.innerHTML = '';
+        }
+        
+        // Test each broker URL
+        async function runMQTTTests() {
+            clearLog();
+            log('Starting MQTT WebSocket connection tests...', 'info');
+            
+            // Check MQTT library
+            if (typeof mqtt === 'undefined') {
+                log('ERROR: MQTT library not loaded!', 'error');
+                return;
+            }
+            
+            log('MQTT library loaded successfully', 'success');
+            
+            const brokers = [
+                'ws://localhost:9001',
+                'ws://127.0.0.1:9001',
+                'ws://localhost:8083', 
+                'ws://127.0.0.1:8083',
+                'ws://localhost:8884',
+                'wss://localhost:9001'
+            ];
+            
+            // Test options
+            const options = {
+                clientId: `mqttjs_test_${Math.random().toString(16).slice(2, 8)}`,
+                clean: true,
+                connectTimeout: 5000,
+                username: 'admin',
+                password: 'rvpass',
+                reconnectPeriod: 0 // Don't auto-reconnect for testing
+            };
+            
+            log(`Testing with client ID: ${options.clientId}`, 'info');
+            
+            // Test each broker
+            for (const broker of brokers) {
+                log(`Testing connection to ${broker}...`, 'info');
+                
+                try {
+                    const client = mqtt.connect(broker, options);
+                    
+                    await new Promise((resolve, reject) => {
+                        let resolved = false;
+                        
+                        // Set timeout to handle case where neither connect nor error fires
+                        const timeout = setTimeout(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                log(`Timeout connecting to ${broker}`, 'error');
+                                try {
+                                    client.end(true);
+                                } catch (e) {}
+                                reject(new Error('Connection timeout'));
+                            }
+                        }, options.connectTimeout);
+                        
+                        client.on('connect', () => {
+                            if (!resolved) {
+                                resolved = true;
+                                clearTimeout(timeout);
+                                log(`✓ Successfully connected to ${broker}`, 'success');
+                                
+                                // Try subscribing and publishing
+                                client.subscribe('test/connection', (err) => {
+                                    if (err) {
+                                        log(`Failed to subscribe on ${broker}: ${err.message}`, 'error');
+                                    } else {
+                                        log(`Successfully subscribed to test/connection on ${broker}`, 'success');
+                                        
+                                        // Publish a test message
+                                        client.publish('test/connection', JSON.stringify({
+                                            time: new Date().toISOString(),
+                                            test: 'MQTT WebSocket connection test'
+                                        }));
+                                    }
+                                });
+                                
+                                // Close after 2 seconds
+                                setTimeout(() => {
+                                    log(`Closing connection to ${broker}`, 'info');
+                                    client.end(true);
+                                    resolve();
+                                }, 2000);
+                            }
+                        });
+                        
+                        client.on('error', (err) => {
+                            if (!resolved) {
+                                resolved = true;
+                                clearTimeout(timeout);
+                                log(`✗ Error connecting to ${broker}: ${err.message}`, 'error');
+                                client.end(true);
+                                reject(err);
+                            }
+                        });
+                        
+                        client.on('message', (topic, message) => {
+                            log(`Received message on ${topic}: ${message.toString()}`, 'success');
+                        });
+                    }).catch(() => {
+                        // Error already logged in the promise rejection
+                    });
+                    
+                } catch (err) {
+                    log(`Fatal error with ${broker}: ${err.message}`, 'error');
+                }
+                
+                // Pause between tests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            log('All broker tests completed', 'info');
+            log('Recommended fix: Use the first successful broker URL in your MQTT_BROKER_OPTIONS.', 'info');
+        }
+    </script>
+</body>
+</html>

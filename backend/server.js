@@ -26,10 +26,16 @@ const app = express();
 const PORT = 3003; // Confirming the PORT variable setting to ensure we're using port 3003
 
 // Middleware
-app.use(cors()); // Apply CORS middleware globally
+app.use(cors({ 
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+})); // Apply CORS middleware globally with explicit configuration
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Load environment variables
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'logs.db');
@@ -92,7 +98,7 @@ const mqttClient = mqtt.connect(MQTT_BROKER, mqttOptions);
 
 // MQTT Topics
 const RVC_TOPIC_PREFIX = 'RVC/';
-const RVC_COMMAND_TOPIC = `${RVC_TOPIC_PREFIX}command`;
+const RVC_COMMAND_TOPIC = `${RVC_TOPIC_PREFIX}commands`;
 const RVC_STATUS_TOPIC = `${RVC_TOPIC_PREFIX}status`;
 const RVC_DISCOVERY_TOPIC = `${RVC_TOPIC_PREFIX}discovery`;
 
@@ -607,6 +613,14 @@ app.locals.handleCommand = handleCommand;
 app.locals.RVC_COMMAND_TOPIC = RVC_COMMAND_TOPIC;
 app.locals.RVC_STATUS_TOPIC = RVC_STATUS_TOPIC;
 
+// Import API routes
+const deviceApiRouter = require('./routes/device-api');
+const logsApiRouter = require('./routes/logs-api');
+
+// Mount API routes
+app.use('/api', deviceApiRouter);
+app.use('/api', logsApiRouter);
+
 // Basic authentication middleware (applied globally *before* non-API routes)
 app.use((req, res, next) => {
   // Apply basic auth globally EXCEPT for paths starting with /api
@@ -625,15 +639,6 @@ app.use((req, res, next) => {
   });
   auth(req, res, next);
 });
-
-// Import and use route modules *after* initialization and middleware
-const apiRoutes = require('./routes/api'); 
-const deviceRoutes = require('./routes/devices');
-const deviceApiRoutes = require('./routes/device-api');
-
-app.use('/api', apiRoutes); // Mount API routes under /api
-app.use('/api', deviceApiRoutes); // Mount enhanced device API routes under /api
-app.use('/', deviceRoutes);  // Mount legacy device routes under /
 
 // MQTT Connection Events
 mqttClient.on('connect', () => {

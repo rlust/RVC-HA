@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple MQTT Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        #status { font-weight: bold; margin: 10px 0; }
+        #log { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Simple MQTT Connection Test</h1>
+    <div id="status">Connection status: Unknown</div>
+    <pre id="log"></pre>
+    
+    <!-- Load the MQTT library synchronously -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        // Simple logging function
+        const logEl = document.getElementById('log');
+        const statusEl = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            console.log(message);
+            const entry = document.createElement('div');
+            entry.textContent = message;
+            entry.className = type;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function updateStatus(message, isConnected = false) {
+            statusEl.textContent = message;
+            statusEl.className = isConnected ? 'success' : 'error';
+        }
+        
+        // Simple connection test
+        function connectMQTT() {
+            log('Starting MQTT connection test...');
+            
+            if (typeof mqtt === 'undefined') {
+                log('MQTT library not loaded!', 'error');
+                updateStatus('Error: MQTT library not loaded');
+                return;
+            }
+            
+            log('MQTT library loaded successfully');
+            
+            // Connection options
+            const options = {
+                clientId: 'simple_test_client_' + Math.random().toString(16).slice(2, 8),
+                clean: true,
+                connectTimeout: 5000,
+                username: 'admin',
+                password: 'rvpass',
+                reconnectPeriod: 1000 // Auto reconnect every 1s
+            };
+            
+            log(`Connecting with client ID: ${options.clientId}`);
+            
+            try {
+                // Connect using explicit URL
+                const client = mqtt.connect('ws://localhost:9001', options);
+                
+                client.on('connect', function() {
+                    log('Connected to MQTT broker!', 'success');
+                    updateStatus('Connected to MQTT broker', true);
+                    
+                    // Subscribe to a test topic
+                    client.subscribe('test/topic', function(err) {
+                        if (!err) {
+                            log('Subscribed to test/topic', 'success');
+                            
+                            // Publish a message
+                            client.publish('test/topic', 'Hello from Simple Test');
+                            log('Published test message', 'success');
+                        } else {
+                            log('Error subscribing: ' + err.message, 'error');
+                        }
+                    });
+                });
+                
+                client.on('message', function(topic, message) {
+                    log(`Received message on ${topic}: ${message.toString()}`, 'success');
+                });
+                
+                client.on('error', function(error) {
+                    log('Connection error: ' + error.message, 'error');
+                    updateStatus('Error connecting: ' + error.message);
+                });
+                
+                client.on('close', function() {
+                    log('Connection closed', 'info');
+                    updateStatus('Connection closed');
+                });
+                
+                client.on('reconnect', function() {
+                    log('Attempting to reconnect', 'info');
+                    updateStatus('Reconnecting...');
+                });
+                
+            } catch (err) {
+                log('Fatal error: ' + err.message, 'error');
+                updateStatus('Fatal error: ' + err.message);
+            }
+        }
+        
+        // Start connection when page loads
+        window.onload = connectMQTT;
+    </script>
+</body>
+</html>

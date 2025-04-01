@@ -23,6 +23,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-basic-auth": "^1.2.1",
+    "json2csv": "^6.0.0-alpha.2",
     "mqtt": "^4.3.7",
     "papaparse": "^5.5.2",
     "sqlite3": "^5.1.6"

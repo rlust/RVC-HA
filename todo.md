@@ -2,7 +2,7 @@
 
 ## Phase 1: Backend Development
 
-### Task 1.1: Set Up Development Environment (Estimated: 2 hours) ✅
+### Task 1.1: Set Up Development Environment (Estimated: 2 hours)
 
 - [x] Install Node.js v16+
 - [x] Install Docker and Docker Compose
@@ -10,14 +10,14 @@
 - [x] Initialize Node.js project with npm
 - [x] Create basic server.js file
 
-### Task 1.2: Install Backend Dependencies (Estimated: 1 hour) ✅
+### Task 1.2: Install Backend Dependencies (Estimated: 1 hour)
 
 - [x] Install Express
 - [x] Install MQTT
 - [x] Install Express Basic Auth
 - [x] Install SQLite3
 
-### Task 1.3: Implement MQTT Connection (Estimated: 3 hours) ✅
+### Task 1.3: Implement MQTT Connection (Estimated: 3 hours)
 
 - [x] Set up MQTT client configuration
 - [x] Implement connection to MQTT broker
@@ -25,7 +25,7 @@
 - [x] Subscribe to RV-C topics
 - [x] Implement message handling
 
-### Task 1.4: Implement Device Command Handling (Estimated: 4 hours) ✅
+### Task 1.4: Implement Device Command Handling (Estimated: 4 hours)
 
 - [x] Create command parser
 - [x] Implement command validation
@@ -35,10 +35,10 @@
 
 ### Task 1.5: Implement Logging (Estimated: 2 hours)
 
-- [ ] Set up SQLite database schema
-- [ ] Implement log storage functions
-- [ ] Create log retrieval API endpoint
-- [ ] Implement log export functionality
+- [x] Set up SQLite database schema
+- [x] Implement log storage functions
+- [x] Create log retrieval API endpoint
+- [x] Implement log export functionality
 
 ## Phase 2: Frontend Development
 

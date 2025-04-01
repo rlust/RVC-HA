@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px; margin: 5px; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; min-height: 200px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Direct API Test</h1>
+    <div>
+        <button id="testBtn">Test API Directly</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API...';
+            
+            try {
+                const response = await fetch('http://localhost:3003/api/logs', {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa('admin:rvpass')
+                    }
+                });
+                
+                resultDiv.innerHTML += `\nResponse status: ${response.status}`;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML += `\nSuccess! Found ${data.length} logs.`;
+                resultDiv.innerHTML += `\nFirst log: ${JSON.stringify(data[0], null, 2)}`;
+            } catch (error) {
+                resultDiv.innerHTML += `\nError: ${error.message}`;
+                console.error('API test error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

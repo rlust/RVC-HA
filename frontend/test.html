@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Troubleshooter</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RV-C MQTT API Troubleshooter</h1>
+        
+        <div class="test-section">
+            <h2>API Connection Test</h2>
+            <div>
+                <button id="testDirectConnection">Test Direct API</button>
+                <button id="fixMainApp">Fix Main Application</button>
+            </div>
+            <div id="connectionResult"></div>
+            
+            <h2>Logs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Device</th>
+                        <th>Event</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    // Hardcoded configuration - bypassing module system
+    const API_CONFIG = {
+        baseUrl: 'http://localhost:3003',
+        username: 'admin',
+        password: 'rvpass'
+    };
+
+    // Direct test that doesn't rely on ES modules
+    document.getElementById('testDirectConnection').addEventListener('click', async () => {
+        const resultDiv = document.getElementById('connectionResult');
+        resultDiv.innerHTML = '<p>Testing direct API connection...</p>';
+        
+        try {
+            const url = `${API_CONFIG.baseUrl}/api/logs`;
+            console.log('Testing direct connection to:', url);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': 'Basic ' + btoa(`${API_CONFIG.username}:${API_CONFIG.password}`)
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const logs = await response.json();
+            resultDiv.innerHTML = `<p class="success">Success! Found ${logs.length} logs.</p>`;
+            
+            // Display logs in the table
+            const logTableBody = document.getElementById('logTableBody');
+            logTableBody.innerHTML = '';
+            
+            logs.forEach(log => {
+                const row = logTableBody.insertRow();
+                
+                const cellTimestamp = row.insertCell(0);
+                const cellDevice = row.insertCell(1);
+                const cellEvent = row.insertCell(2);
+                const cellDetails = row.insertCell(3);
+                
+                const date = new Date(log.timestamp);
+                cellTimestamp.textContent = date.toLocaleString();
+                cellDevice.textContent = log.deviceId;
+                cellEvent.textContent = log.event;
+                
+                try {
+                    const details = JSON.parse(log.status);
+                    cellDetails.textContent = JSON.stringify(details, null, 2);
+                } catch (e) {
+                    cellDetails.textContent = log.status || '-';
+                }
+            });
+        } catch (error) {
+            console.error('API test error:', error);
+            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+        }
+    });
+    
+    // Fix for main application
+    document.getElementById('fixMainApp').addEventListener('click', async () => {
+        const resultDiv = document.getElementById('connectionResult');
+        resultDiv.innerHTML = '<p>Applying fix to main application...</p>';
+        
+        try {
+            // Create a direct replacement for the fetchLogs function in the main app
+            window.directFetchLogs = async (filters = {}) => {
+                const params = new URLSearchParams();
+                Object.entries(filters || {}).forEach(([key, value]) => {
+                    if (value) params.append(key, value);
+                });
+                
+                const queryString = params.toString() ? `?${params.toString()}` : '';
+                const url = `${API_CONFIG.baseUrl}/api/logs${queryString}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${API_CONFIG.username}:${API_CONFIG.password}`)
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.json();
+            };
+            
+            // Create a script element to inject our fix into the main application
+            const script = document.createElement('script');
+            script.textContent = `
+                // Apply the fix when the page loads
+                window.addEventListener('DOMContentLoaded', () => {
+                    // Override the API URL in the config if it exists
+                    if (window.API_BASE_URL) {
+                        window.API_BASE_URL = "${API_CONFIG.baseUrl}";
+                        console.log("Fixed API_BASE_URL:", window.API_BASE_URL);
+                    }
+                    
+                    // Replace the fetchLogs function with our direct implementation
+                    if (window.fetchLogs) {
+                        const originalFetchLogs = window.fetchLogs;
+                        window.fetchLogs = async (filters) => {
+                            try {
+                                return await window.directFetchLogs(filters);
+                            } catch (error) {
+                                console.error("Error in fixed fetchLogs:", error);
+                                throw error;
+                            }
+                        };
+                        console.log("Replaced fetchLogs with fixed version");
+                    }
+                });
+            `;
+            
+            document.body.appendChild(script);
+            
+            resultDiv.innerHTML = `
+                <p class="success">Fix applied!</p>
+                <p>Instructions:</p>
+                <ol>
+                    <li>Open the main app in a new browser tab</li>
+                    <li>Open browser developer console (F12 or right-click > Inspect)</li>
+                    <li>In the console, paste and run this command:</li>
+                </ol>
+                <pre>
+window.directFetchLogs = async (filters = {}) => {
+    const url = 'http://localhost:3003/api/logs';
+    const response = await fetch(url, {
+        headers: { 'Authorization': 'Basic ' + btoa('admin:rvpass') }
+    });
+    if (!response.ok) throw new Error(\`HTTP error! status: \${response.status}\`);
+    return response.json();
+};
+
+// Replace the original fetchLogs
+const originalFetchAndDisplayLogs = window.fetchAndDisplayLogs;
+window.fetchAndDisplayLogs = async () => {
+    const logTableBody = document.getElementById('logTableBody');
+    if (!logTableBody) return;
+    
+    try {
+        logTableBody.innerHTML = '<tr><td colspan="4">Loading logs...</td></tr>';
+        const logs = await window.directFetchLogs();
+        
+        logTableBody.innerHTML = '';
+        
+        if (logs.length === 0) {
+            logTableBody.innerHTML = '<tr><td colspan="4"><em>No logs found</em></td></tr>';
+            return;
+        }
+        
+        logs.forEach(log => {
+            const row = logTableBody.insertRow();
+            const cellTimestamp = row.insertCell(0);
+            const cellDevice = row.insertCell(1);
+            const cellEvent = row.insertCell(2);
+            const cellDetails = row.insertCell(3);
+            
+            const date = new Date(log.timestamp);
+            cellTimestamp.textContent = date.toLocaleString();
+            cellDevice.textContent = log.deviceId;
+            cellEvent.textContent = log.event;
+            
+            try {
+                const details = JSON.parse(log.status);
+                cellDetails.textContent = JSON.stringify(details, null, 2);
+            } catch (e) {
+                cellDetails.textContent = log.status || '-';
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        logTableBody.innerHTML = \`<tr><td colspan="4">Error: \${error.message}</td></tr>\`;
+    }
+};
+
+// Run the fixed function
+fetchAndDisplayLogs();
+                </pre>
+            `;
+        } catch (error) {
+            console.error('Error applying fix:', error);
+            resultDiv.innerHTML = `<p class="error">Error applying fix: ${error.message}</p>`;
+        }
+    });
+    </script>
+</body>
+</html>

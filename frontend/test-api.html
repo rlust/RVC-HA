@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button id="testBtn">Test Logs API</button>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API...';
+            
+            try {
+                const response = await fetch('http://localhost:3003/api/logs', {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa('admin:rvpass')
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Success! Found ${data.length} logs.<br>First log: ${JSON.stringify(data[0])}`;
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('API test error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

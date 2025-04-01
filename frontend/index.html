@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RV-C MQTT Control Panel</title>
+    <!-- Load MQTT library directly in the head with error handling -->
+    <script>
+        // Track MQTT library loading status
+        window.mqttLoaded = false;
+        
+        function handleMqttError() {
+            console.error('Failed to load MQTT library');
+            document.addEventListener('DOMContentLoaded', function() {
+                const statusEl = document.getElementById('connectionStatusText');
+                if (statusEl) {
+                    statusEl.textContent = 'Error: MQTT library failed to load';
+                }
+            });
+        }
+    </script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js" 
+            onload="window.mqttLoaded = true; console.log('MQTT library loaded successfully');" 
+            onerror="handleMqttError()"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #e6f2ff; /* Light blue background */
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1000px; /* Max width for larger screens */
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            background-color: #336699; /* Dark blue header background */
+            color: white;
+            padding: 10px;
+            margin: -20px -20px 20px -20px; /* Extend to container edges */
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        
+        h2 {
+            margin: 20px -20px 15px -20px;
+            font-size: 1.2em;
+            border-radius: 0; /* Remove radius for subsection headers */
+        }
+
+        #controls input[type="text"],
+        #controls select,
+        #controls button {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        #controls button {
+            background-color: #336699;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        #controls button:hover {
+            background-color: #265580;
+        }
+        
+        #deviceTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        #deviceTable th, #deviceTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #deviceTable th {
+            background-color: #f2f2f2;
+        }
+
+        #logChartContainer {
+            margin-top: 20px;
+        }
+
+        /* Basic responsiveness - styles apply well up to 600px already */
+        /* Add specific styles for larger screens if needed */
+        /* @media (min-width: 600px) { ... } */
+
+        /* New styles for modern UI components */
+        .view-toggles {
+            margin-bottom: 10px;
+        }
+
+        .view-toggle {
+            background-color: #fff;
+            border: none;
+            padding: 8px 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .view-toggle.active {
+            background-color: #336699;
+            color: white;
+        }
+
+        #connectionStatus {
+            margin-bottom: 10px;
+        }
+
+        /* Status indicator styling */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-unknown {
+            background-color: #ccc;
+        }
+        
+        .status-online {
+            background-color: #28a745;
+        }
+        
+        .status-offline {
+            background-color: #dc3545;
+        }
+        
+        .status-warning {
+            background-color: #ffc107;
+        }
+        
+        .status-simulation {
+            background-color: #17a2b8;
+        }
+        
+        .status-error {
+            background-color: #dc3545;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Make the connection status more prominent */
+        #connectionStatus {
+            padding: 5px 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+        }
+
+        .device-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .device-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: calc(33.33% - 20px);
+            margin: 10px;
+            box-sizing: border-box;
+        }
+
+        .event-log-controls {
+            margin-bottom: 10px;
+        }
+
+        #logTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        #logTable th, #logTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #logTable th {
+            background-color: #f2f2f2;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        /* Added status message styles */
+        .status-message {
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RV-C MQTT Control Panel</h1>
+
+        <h2>Device Control</h2>
+        <div id="controls">
+            <form id="commandForm">
+                <label for="deviceId">Device ID:</label>
+                <input type="text" id="deviceId" name="deviceId" placeholder="e.g., dimmer1">
+                
+                <label for="command">Command:</label>
+                <select id="command">
+                    <option value="" disabled selected>-- Select Command --</option>
+                    <optgroup label="Dimmer">
+                        <option value="setBrightness">setBrightness</option>
+                        <option value="turnOn">turnOn</option>
+                        <option value="turnOff">turnOff</option>
+                    </optgroup>
+                    <optgroup label="Vent">
+                        <option value="setPosition">setPosition</option>
+                        <option value="open">open</option>
+                        <option value="close">close</option>
+                    </optgroup>
+                     <optgroup label="Temp Sensor">
+                        <option value="calibrate">calibrate</option>
+                    </optgroup>
+                   <optgroup label="HVAC">
+                        <option value="setMode">setMode</option>
+                        <option value="setFanMode">setFanMode</option>
+                        <option value="setTemperature">setTemperature</option> 
+                   </optgroup>
+                    <optgroup label="Water Heater">
+                        <option value="setMode">setMode</option>
+                         <option value="setTemperature">setTemperature</option>
+                     </optgroup>
+                     <optgroup label="Generator">
+                        <option value="setCommand">setCommand</option>
+                        <option value="start">start</option>
+                        <option value="stop">stop</option>
+                     </optgroup>
+                </select>
+                
+                <label for="parameters">Parameters:</label>
+                <input type="text" id="parameters" name="parameters" placeholder="e.g., brightness=75">
+                
+                <button type="submit">Send Command</button>
+            </form>
+            
+            <div id="connectionStatus">
+                <span id="connectionIndicator" class="status-indicator status-connecting"></span>
+                <div id="connectionText">Initializing connection...</div>
+            </div>
+            
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+
+        <h2>Devices</h2>
+        <div class="view-toggles">
+            <button class="view-toggle active" data-view="table">Table View</button>
+            <button class="view-toggle" data-view="cards">Card View</button>
+        </div>
+        
+        <div id="tableView">
+            <table id="deviceTable">
+                <thead>
+                    <tr>
+                        <th>Device ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Controls</th>
+                    </tr>
+                </thead>
+                <tbody id="deviceTableBody">
+                    <!-- Table content will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="cardView" style="display: none;">
+            <div class="device-cards">
+                <!-- Card content will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <h2>Event Log</h2>
+        <div class="event-log-controls">
+            <button id="refreshLogs">Refresh Logs</button>
+            <button id="exportLogs">Export Logs</button>
+        </div>
+        
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Device</th>
+                    <th>Type</th>
+                    <th>Event</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Log content will be populated by JavaScript -->
+            </tbody>
+        </table>
+        
+        <div id="logChartContainer">
+            <canvas id="logChart"></canvas>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 RV-C MQTT Control Panel. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- External library scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- MQTT library -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <!-- Application scripts -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/ui.js?v=1711982718"></script> 
+    <script type="module" src="js/main.js?v=1711983728"></script> 
+</body>
+</html>

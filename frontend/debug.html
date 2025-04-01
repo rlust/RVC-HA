@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug</title>
+</head>
+<body>
+    <h1>API Debug Tool</h1>
+    <div>
+        <button id="directRequest">Test Direct API Request</button>
+        <button id="moduleRequest">Test API via Module</button>
+    </div>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap;"></div>
+
+    <script>
+        // Direct API Request (without modules)
+        document.getElementById('directRequest').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing direct API request...';
+            
+            try {
+                console.log('Sending direct request to http://localhost:3003/api/logs');
+                const response = await fetch('http://localhost:3003/api/logs', {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa('admin:rvpass')
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Success! Found ${data.length} logs.\nFirst log: ${JSON.stringify(data[0], null, 2)}`;
+                console.log('Direct API request successful', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Direct API request error:', error);
+            }
+        });
+    </script>
+    
+    <script type="module">
+        // Test via modules
+        import { API_BASE_URL, API_AUTH } from './js/config.js';
+        
+        document.getElementById('moduleRequest').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API request via module...';
+            
+            try {
+                console.log('Config loaded:', { API_BASE_URL, API_AUTH });
+                console.log(`Sending module request to ${API_BASE_URL}/api/logs`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/logs`, {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${API_AUTH.username}:${API_AUTH.password}`)
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Success! Found ${data.length} logs.\nFirst log: ${JSON.stringify(data[0], null, 2)}`;
+                console.log('Module API request successful', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Module API request error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+/* RV-C MQTT Control Panel Styles */
+
+:root {
+  --primary-color: #336699;
+  --primary-dark: #265580;
+  --primary-light: #e6f2ff;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --danger-color: #f44336;
+  --light-gray: #f2f2f2;
+  --medium-gray: #ddd;
+  --dark-gray: #666;
+  --text-dark: #333;
+  --text-light: #fff;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  --transition: all 0.3s ease;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 10px;
+  background-color: var(--primary-light);
+  display: flex;
+  justify-content: center;
+  color: var(--text-dark);
+  line-height: 1.5;
+}
+
+.container {
+  background-color: var(--text-light);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  width: 100%;
+  max-width: 1000px;
+  box-sizing: border-box;
+}
+
+/* Headers */
+h1, h2 {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 10px 15px;
+  margin: -20px -20px 20px -20px;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  text-align: center;
+}
+
+h2 {
+  margin: 20px -20px 15px -20px;
+  font-size: 1.2em;
+  border-radius: 0;
+}
+
+/* Controls section */
+#controls {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius);
+}
+
+#commandForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  #commandForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+#commandForm label {
+  font-weight: bold;
+  color: var(--dark-gray);
+}
+
+#commandForm input,
+#commandForm select,
+#commandForm button {
+  padding: 10px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 4px;
+  font-size: 1em;
+  width: 100%;
+}
+
+#commandForm button {
+  grid-column: span 2;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+  transition: var(--transition);
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  #commandForm button {
+    grid-column: span 1;
+  }
+}
+
+#commandForm button:hover {
+  background-color: var(--primary-dark);
+}
+
+#commandResult {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+}
+
+.result-success {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+}
+
+.result-error {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--danger-color);
+}
+
+.result-pending {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: var(--warning-color);
+}
+
+/* Device Table */
+#deviceTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  box-shadow: var(--box-shadow);
+}
+
+#deviceTable th, 
+#deviceTable td {
+  border: 1px solid var(--medium-gray);
+  padding: 12px;
+  text-align: left;
+}
+
+#deviceTable th {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-weight: bold;
+}
+
+#deviceTable tr:nth-child(even) {
+  background-color: var(--light-gray);
+}
+
+#deviceTable tr:hover {
+  background-color: rgba(51, 102, 153, 0.1);
+}
+
+/* Device cards for alternative view */
+.device-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.device-card {
+  background-color: var(--text-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 15px;
+  transition: var(--transition);
+}
+
+.device-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.device-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--medium-gray);
+}
+
+.device-card-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: var(--primary-color);
+}
+
+.device-card-type {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
+
+.device-card-status {
+  margin-top: 10px;
+}
+
+.device-card-actions {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.device-card-button {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: var(--transition);
+}
+
+.device-card-button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* View toggles */
+.view-toggles {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.view-toggle {
+  background-color: var(--light-gray);
+  border: 1px solid var(--medium-gray);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+}
+
+.view-toggle:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.view-toggle:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.view-toggle.active {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.view-toggle svg {
+  margin-right: 5px;
+}
+
+/* Utils */
+.hidden {
+  display: none;
+}
+
+/* Loading indicators */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(51, 102, 153, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.status-online {
+  background-color: var(--success-color);
+}
+
+.status-offline {
+  background-color: var(--danger-color);
+}
+
+.status-unknown {
+  background-color: var(--warning-color);
+}

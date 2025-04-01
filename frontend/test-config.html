@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Test</title>
+</head>
+<body>
+    <h1>Config Test</h1>
+    <div id="result"></div>
+
+    <script type="module">
+        import { API_BASE_URL, API_AUTH, MQTT_CONFIG } from './js/config.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h2>Configuration Loaded:</h2>
+                <p><strong>API_BASE_URL:</strong> ${API_BASE_URL}</p>
+                <p><strong>API_AUTH.username:</strong> ${API_AUTH.username}</p>
+                <p><strong>MQTT_CONFIG.TOPIC_PREFIX:</strong> ${MQTT_CONFIG.TOPIC_PREFIX}</p>
+            `;
+            
+            console.log('API_BASE_URL:', API_BASE_URL);
+            console.log('API_AUTH:', API_AUTH);
+            console.log('MQTT_CONFIG:', MQTT_CONFIG);
+        });
+    </script>
+</body>
+</html>

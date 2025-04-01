@@ -4,7 +4,7 @@
 
 When attempting to run the RV-C MQTT Control Application in a Docker container, we encountered an error with the SQLite3 module:
 
-```
+```bash
 Error: Error loading shared library /app/node_modules/sqlite3/build/Release/node_sqlite3.node: Exec format error
 ```
 

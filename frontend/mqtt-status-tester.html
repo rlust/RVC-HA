@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Status Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .status-panel {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .status-connecting { background-color: #ffc107; }
+        .status-connected { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-disconnected { background-color: #6c757d; }
+        
+        #statusDisplay {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        #logPanel {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #f5f5f5;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            margin: 4px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        
+        .log-time {
+            color: #777;
+            margin-right: 8px;
+        }
+        
+        .log-info { color: #0066cc; }
+        .log-success { color: #28a745; }
+        .log-warning { color: #ffc107; }
+        .log-error { color: #dc3545; }
+        
+        .control-panel {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        #connectionForm {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>MQTT Connection Tester</h1>
+    
+    <div id="connectionForm">
+        <h2>Connection Parameters</h2>
+        <div class="form-group">
+            <label for="brokerUrl">MQTT Broker URL</label>
+            <input type="text" id="brokerUrl" value="ws://localhost:9001">
+        </div>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" value="admin">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" value="rvpass">
+        </div>
+        <div class="form-group">
+            <label for="topic">Test Topic</label>
+            <input type="text" id="topic" value="RVC/test">
+        </div>
+    </div>
+    
+    <div class="status-panel">
+        <div id="statusIndicator" class="status-indicator status-disconnected"></div>
+        <span id="statusDisplay">Disconnected</span>
+    </div>
+    
+    <div class="control-panel">
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+        <button id="publishBtn" disabled>Publish Test Message</button>
+        <button id="clearLogBtn">Clear Log</button>
+    </div>
+    
+    <div id="logPanel"></div>
+    
+    <script>
+        // Wait for DOM content to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('connecting', 'Loading MQTT library...');
+            
+            // Load MQTT library dynamically
+            loadMqttLibrary()
+                .then(() => {
+                    log('MQTT library loaded successfully', 'success');
+                    initializeApp();
+                    // Auto-connect when loaded
+                    setTimeout(function() {
+                        document.getElementById('connectBtn').click();
+                    }, 500);
+                })
+                .catch(err => {
+                    log(`Failed to load MQTT library: ${err.message}`, 'error');
+                    updateStatus('error', `Library load failed: ${err.message}`);
+                });
+        });
+        
+        // Load MQTT library dynamically
+        function loadMqttLibrary() {
+            return new Promise((resolve, reject) => {
+                // Check if already loaded
+                if (typeof mqtt !== 'undefined') {
+                    return resolve();
+                }
+                
+                // Create script element to load MQTT.js
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/mqtt/dist/mqtt.min.js';
+                script.async = true;
+                
+                script.onload = () => {
+                    // Check if loaded correctly
+                    if (typeof mqtt !== 'undefined') {
+                        resolve();
+                    } else {
+                        reject(new Error('MQTT library not available after loading'));
+                    }
+                };
+                
+                script.onerror = () => {
+                    reject(new Error('Failed to load MQTT library from CDN'));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Initialize application after MQTT loads
+        function initializeApp() {
+            let mqttClient = null;
+            
+            // Get DOM elements
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const publishBtn = document.getElementById('publishBtn');
+            const clearLogBtn = document.getElementById('clearLogBtn');
+            const brokerUrlInput = document.getElementById('brokerUrl');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const topicInput = document.getElementById('topic');
+            
+            // Button event handlers
+            connectBtn.addEventListener('click', connect);
+            disconnectBtn.addEventListener('click', disconnect);
+            publishBtn.addEventListener('click', publishMessage);
+            clearLogBtn.addEventListener('click', clearLog);
+            
+            // Connect to MQTT broker
+            function connect() {
+                updateStatus('connecting', 'Connecting...');
+                
+                const brokerUrl = brokerUrlInput.value.trim();
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                if (!brokerUrl) {
+                    log('Broker URL is required', 'error');
+                    updateStatus('error', 'Broker URL is required');
+                    return;
+                }
+                
+                log(`Connecting to MQTT broker at ${brokerUrl}`);
+                
+                // Connection options
+                const options = {
+                    clientId: `mqtt_tester_${Math.random().toString(16).slice(2, 8)}`,
+                    clean: true,
+                    connectTimeout: 5000,
+                    username: username || undefined,
+                    password: password || undefined,
+                    reconnectPeriod: 0, // We'll handle reconnection manually
+                };
+                
+                try {
+                    // Create MQTT client
+                    mqttClient = mqtt.connect(brokerUrl, options);
+                    
+                    // Set up event handlers
+                    mqttClient.on('connect', function() {
+                        log('Connected to MQTT broker successfully!', 'success');
+                        updateStatus('connected', 'Connected');
+                        updateButtons(true);
+                        
+                        // Subscribe to test topic
+                        const topic = topicInput.value.trim();
+                        if (topic) {
+                            mqttClient.subscribe(topic, function(err) {
+                                if (err) {
+                                    log(`Error subscribing to topic ${topic}: ${err.message}`, 'error');
+                                } else {
+                                    log(`Subscribed to topic: ${topic}`, 'success');
+                                }
+                            });
+                        }
+                    });
+                    
+                    mqttClient.on('message', function(topic, message) {
+                        const msg = message.toString();
+                        log(`Received message on topic ${topic}: ${msg}`, 'info');
+                    });
+                    
+                    mqttClient.on('error', function(err) {
+                        log(`MQTT error: ${err.message}`, 'error');
+                        updateStatus('error', `Error: ${err.message}`);
+                    });
+                    
+                    mqttClient.on('close', function() {
+                        log('MQTT connection closed', 'warning');
+                        updateStatus('disconnected', 'Disconnected');
+                        updateButtons(false);
+                    });
+                    
+                    mqttClient.on('offline', function() {
+                        log('MQTT client is offline', 'warning');
+                        updateStatus('disconnected', 'Offline');
+                    });
+                    
+                    mqttClient.on('reconnect', function() {
+                        log('Attempting to reconnect...', 'info');
+                        updateStatus('connecting', 'Reconnecting...');
+                    });
+                    
+                } catch (error) {
+                    log(`Error creating MQTT client: ${error.message}`, 'error');
+                    updateStatus('error', `Error: ${error.message}`);
+                }
+            }
+            
+            // Disconnect from MQTT broker
+            function disconnect() {
+                if (mqttClient) {
+                    log('Disconnecting from MQTT broker...');
+                    mqttClient.end(true, () => {
+                        log('Disconnected from MQTT broker', 'info');
+                        updateStatus('disconnected', 'Disconnected');
+                        updateButtons(false);
+                    });
+                }
+            }
+            
+            // Publish test message
+            function publishMessage() {
+                if (!mqttClient || !mqttClient.connected) {
+                    log('Not connected to MQTT broker', 'error');
+                    return;
+                }
+                
+                const topic = topicInput.value.trim();
+                if (!topic) {
+                    log('Topic is required', 'error');
+                    return;
+                }
+                
+                const message = {
+                    text: 'Test message',
+                    timestamp: new Date().toISOString(),
+                    random: Math.random().toString(36).substring(2, 15)
+                };
+                
+                log(`Publishing message to ${topic}: ${JSON.stringify(message)}`, 'info');
+                
+                mqttClient.publish(topic, JSON.stringify(message), {}, function(err) {
+                    if (err) {
+                        log(`Error publishing message: ${err.message}`, 'error');
+                    } else {
+                        log('Message published successfully', 'success');
+                    }
+                });
+            }
+            
+            // Update connection status UI
+            function updateStatus(status, message) {
+                const statusIndicator = document.getElementById('statusIndicator');
+                const statusDisplay = document.getElementById('statusDisplay');
+                
+                // Remove all existing status classes
+                statusIndicator.className = 'status-indicator';
+                
+                // Add appropriate status class and update message
+                statusIndicator.classList.add(`status-${status}`);
+                statusDisplay.textContent = message;
+            }
+            
+            // Update button states based on connection
+            function updateButtons(connected) {
+                connectBtn.disabled = connected;
+                disconnectBtn.disabled = !connected;
+                publishBtn.disabled = !connected;
+            }
+            
+            // Clear the log panel
+            function clearLog() {
+                document.getElementById('logPanel').innerHTML = '';
+            }
+        }
+        
+        // Log a message to the log panel
+        function log(message, type = 'info') {
+            console.log(`[${type}] ${message}`);
+            const logPanel = document.getElementById('logPanel');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logTime = document.createElement('span');
+            logTime.className = 'log-time';
+            logTime.textContent = `[${timestamp}]`;
+            
+            logEntry.appendChild(logTime);
+            logEntry.appendChild(document.createTextNode(` ${message}`));
+            
+            logPanel.appendChild(logEntry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+    </script>
+</body>
+</html>

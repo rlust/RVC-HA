@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT WebSocket Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .disconnected {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        #log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MQTT WebSocket Connection Test</h1>
+    
+    <div id="status" class="disconnected">Not connected</div>
+    
+    <div class="controls">
+        <div>
+            <label for="broker">Broker URL:</label>
+            <input type="text" id="broker" value="ws://localhost:9001" size="30">
+        </div>
+        <div style="margin-top: 10px;">
+            <button id="connect">Connect</button>
+            <button id="disconnect">Disconnect</button>
+        </div>
+    </div>
+    
+    <h2>Connection Log</h2>
+    <div id="log"></div>
+    
+    <div class="controls">
+        <div>
+            <label for="topic">Topic:</label>
+            <input type="text" id="topic" value="RVC/test" size="30">
+        </div>
+        <div>
+            <label for="message">Message:</label>
+            <input type="text" id="message" value='{"status": "test"}' size="30">
+        </div>
+        <div style="margin-top: 10px;">
+            <button id="publish">Publish Message</button>
+            <button id="subscribe">Subscribe to Topic</button>
+        </div>
+    </div>
+    
+    <!-- Load MQTT.js from CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    
+    <script>
+        // Get DOM elements
+        const connectBtn = document.getElementById('connect');
+        const disconnectBtn = document.getElementById('disconnect');
+        const publishBtn = document.getElementById('publish');
+        const subscribeBtn = document.getElementById('subscribe');
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        const brokerInput = document.getElementById('broker');
+        const topicInput = document.getElementById('topic');
+        const messageInput = document.getElementById('message');
+        
+        // Store MQTT client
+        let client = null;
+        
+        // Log function
+        function log(message, isError = false) {
+            const now = new Date().toISOString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `${now}: ${message}`;
+            if (isError) {
+                logEntry.style.color = 'red';
+            }
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Set status
+        function setStatus(text, className) {
+            statusDiv.textContent = text;
+            statusDiv.className = className;
+        }
+        
+        // Connect to MQTT broker
+        connectBtn.addEventListener('click', () => {
+            if (client) {
+                log('Already connected, disconnect first');
+                return;
+            }
+            
+            try {
+                const brokerUrl = brokerInput.value;
+                log(`Attempting to connect to ${brokerUrl}...`);
+                
+                // Check if MQTT is available
+                if (typeof mqtt === 'undefined') {
+                    log('MQTT library not loaded!', true);
+                    setStatus('MQTT library not available', 'error');
+                    return;
+                }
+                
+                // Options for connection
+                const options = {
+                    clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
+                    clean: true,
+                    connectTimeout: 10000
+                };
+                
+                log(`Using client ID: ${options.clientId}`);
+                
+                // Create client
+                client = mqtt.connect(brokerUrl, options);
+                
+                // Set up event handlers
+                client.on('connect', () => {
+                    log('Connected successfully');
+                    setStatus(`Connected to ${brokerUrl}`, 'connected');
+                });
+                
+                client.on('error', (err) => {
+                    log(`Connection error: ${err.message}`, true);
+                    setStatus(`Error: ${err.message}`, 'error');
+                });
+                
+                client.on('close', () => {
+                    log('Connection closed');
+                    setStatus('Disconnected', 'disconnected');
+                    client = null;
+                });
+                
+                client.on('reconnect', () => {
+                    log('Attempting to reconnect...');
+                });
+                
+                client.on('message', (topic, message) => {
+                    try {
+                        const msg = message.toString();
+                        log(`Received message on topic "${topic}": ${msg}`);
+                    } catch (e) {
+                        log(`Error processing message: ${e.message}`, true);
+                    }
+                });
+            } catch (error) {
+                log(`Error creating client: ${error.message}`, true);
+                setStatus(`Error: ${error.message}`, 'error');
+            }
+        });
+        
+        // Disconnect from MQTT broker
+        disconnectBtn.addEventListener('click', () => {
+            if (!client) {
+                log('Not connected');
+                return;
+            }
+            
+            try {
+                client.end(true);
+                log('Disconnected');
+                setStatus('Disconnected', 'disconnected');
+                client = null;
+            } catch (error) {
+                log(`Error disconnecting: ${error.message}`, true);
+            }
+        });
+        
+        // Publish message
+        publishBtn.addEventListener('click', () => {
+            if (!client) {
+                log('Not connected', true);
+                return;
+            }
+            
+            try {
+                const topic = topicInput.value;
+                const message = messageInput.value;
+                
+                client.publish(topic, message);
+                log(`Published to "${topic}": ${message}`);
+            } catch (error) {
+                log(`Error publishing: ${error.message}`, true);
+            }
+        });
+        
+        // Subscribe to topic
+        subscribeBtn.addEventListener('click', () => {
+            if (!client) {
+                log('Not connected', true);
+                return;
+            }
+            
+            try {
+                const topic = topicInput.value;
+                
+                client.subscribe(topic, (err) => {
+                    if (err) {
+                        log(`Error subscribing to "${topic}": ${err.message}`, true);
+                    } else {
+                        log(`Subscribed to "${topic}"`);
+                    }
+                });
+            } catch (error) {
+                log(`Error subscribing: ${error.message}`, true);
+            }
+        });
+        
+        // Initial log
+        log('MQTT WebSocket test initialized');
+        log(`MQTT library loaded: ${typeof mqtt !== 'undefined'}`);
+    </script>
+</body>
+</html>
