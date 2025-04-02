@@ -1,5 +1,9 @@
 console.log('--- ui.js script loaded ---'); // Top level log
 
+// Import shared data/config
+import { deviceNameMapping } from './device_names.js'; // Import the mapping
+console.log('UI: Imported deviceNameMapping:', deviceNameMapping); // Log the imported object
+
 // DOM element references - initialized after DOMContentLoaded
 let deviceTableBody;
 let cardView;
@@ -10,6 +14,15 @@ let connectionStatusText;
 let viewToggles;
 let parameterHelper;
 let parameterSuggestions;
+
+// Helper function to get the display name for a device (uses imported mapping)
+function getDeviceDisplayName(deviceId) {
+    console.log(`UI: getDeviceDisplayName called with ID: ${deviceId}`); // Log input
+    const mappedName = deviceNameMapping[deviceId];
+    const displayName = mappedName || deviceId; // Return mapped name or original ID
+    console.log(`UI: Mapped name found: ${mappedName}, Returning: ${displayName}`); // Log output
+    return displayName;
+}
 
 // State Management
 let firstMessageReceived = false; // Flag to track if any device message has been received
@@ -241,26 +254,37 @@ function createActionButtons(deviceId, deviceType) {
     btnContainer.className = 'action-buttons';
     
     // Common actions based on device type
+    let isHandledByType = false;
     switch (deviceType) {
-        case 'dimmer':
+        case 'dimmer': // Assuming this is a different type
             const onBtn = createButton('On', () => quickCommand(deviceId, 'turnOn'));
             const offBtn = createButton('Off', () => quickCommand(deviceId, 'turnOff'));
             btnContainer.appendChild(onBtn);
             btnContainer.appendChild(offBtn);
+            isHandledByType = true;
             break;
         case 'vent':
             const openBtn = createButton('Open', () => quickCommand(deviceId, 'open'));
             const closeBtn = createButton('Close', () => quickCommand(deviceId, 'close'));
             btnContainer.appendChild(openBtn);
             btnContainer.appendChild(closeBtn);
+            isHandledByType = true;
+            break;
+        case 'DC_DIMMER_COMMAND': // Handle our new dimmer type
+            const setBrightnessBtn = createButton('Set Brightness', () => selectDeviceForControl(deviceId, deviceType)); // Pass type
+            setBrightnessBtn.classList.add('control-btn'); // Use same class for styling?
+            btnContainer.appendChild(setBrightnessBtn);
+            isHandledByType = true;
             break;
         // Add other device type specific actions
     }
     
-    // Add a generic control button for all devices
-    const ctrlBtn = createButton('Control', () => selectDeviceForControl(deviceId));
-    ctrlBtn.classList.add('control-btn');
-    btnContainer.appendChild(ctrlBtn);
+    // Add a generic control button ONLY if not handled by type-specific buttons above
+    if (!isHandledByType) {
+        const ctrlBtn = createButton('Control', () => selectDeviceForControl(deviceId, deviceType)); // Pass type
+        ctrlBtn.classList.add('control-btn');
+        btnContainer.appendChild(ctrlBtn);
+    }
     
     return btnContainer;
 }
@@ -287,8 +311,26 @@ function quickCommand(deviceId, command) {
 }
 
 // Function to select a device for detailed control
-function selectDeviceForControl(deviceId) {
+function selectDeviceForControl(deviceId, deviceType) { // Added deviceType parameter
+    const commandInput = document.getElementById('command');
+    const paramsInput = document.getElementById('parameters');
+    
+    // Set the device ID regardless of type
     document.getElementById('deviceId').value = deviceId;
+    
+    // Pre-fill command/params based on type
+    if (deviceType === 'DC_DIMMER_COMMAND') {
+        commandInput.value = 'set_brightness'; // Suggest a command
+        paramsInput.value = '{ "brightness": 0 }'; // Suggest parameters with a default
+        updateParameterHelper('set_brightness'); // Trigger helper update
+    } else {
+        // For other types, maybe clear the command/params or leave as is?
+        // Let's clear them for now to avoid confusion.
+        commandInput.value = '';
+        paramsInput.value = '{}';
+        updateParameterHelper(''); // Clear helper
+    }
+    
     // Scroll to the control form
     document.getElementById('controls').scrollIntoView({ behavior: 'smooth' });
 }
@@ -351,165 +393,190 @@ function updateParameterHelper(command) {
 }
 
 // Exported function to update the device table in the UI
-function updateTable(topic, payload) {
+// Now accepts deviceId directly from main.js
+function updateTable(deviceId, payload) {
     if (!deviceTableBody || !cardView) {
         console.error('UI Error: updateTable - Device table body or card view not found!');
         return;
     }
 
-    const topicParts = topic.split('/');
-    
-    // Expecting topic format RVC/status/<deviceId>/state
-    if (topicParts.length < 4 || topicParts[0] !== 'RVC' || topicParts[1] !== 'status' || topicParts[3] !== 'state') {
-        if (topic === 'RVC/status/server') {
-            console.log('UI: updateTable - Received server status update:', payload);
-            if (payload.state === 'online') {
-                updateConnectionStatus('connected', 'Connected to MQTT Server');
-            } else {
-                updateConnectionStatus('disconnected', 'MQTT Server Offline');
-            }
-        } else if (topic.startsWith('homeassistant/')) {
-            // console.log('UI: updateTable - Ignoring Home Assistant topic:', topic);
+    // Determine Device Type from the unified deviceId
+    let deviceType = 'Unknown';
+    let isDimmer = false;
+    if (deviceId.startsWith('DC_DIMMER_COMMAND_2_')) {
+        deviceType = 'DC_DIMMER'; // Simplified type name
+        isDimmer = true;
+    } else if (deviceId === 'RVC/status/server') {
+        // Handle server status update (moved logic here for clarity)
+        console.log('UI: updateTable - Received server status update:', payload);
+        if (payload && payload.state === 'online') {
+            updateConnectionStatus('connected', 'Connected to MQTT Server');
+        } else {
+            updateConnectionStatus('disconnected', 'MQTT Server Offline or Initializing');
         }
-        else {
-            console.warn('UI: updateTable - Ignoring non-standard topic format:', topic);
+        return; // Stop processing for server status
+    } else {
+        // Attempt to parse other RVC device types if needed in the future
+        const parts = deviceId.split('_');
+        if (parts.length > 1) {
+            deviceType = parts[0]; // Crude type extraction, improve if needed
         }
-        return; 
+        console.log(`UI: updateTable - Processing non-dimmer device: ${deviceId}, Type: ${deviceType}`);
     }
 
-    const deviceId = topicParts[2];
-    const deviceType = payload.deviceType || 'Unknown'; // Get type from payload
-        
-    // Store the device state
-    deviceStates.set(deviceId, payload);
+    // Use the deviceId itself for display name lookup (since it's the unified key)
+    const displayNameId = deviceId;
 
-    // Remove initial "Connecting..." or "Waiting..." row on first valid device message
+    // Parse payload (minimal parsing, handle potential non-JSON)
+    let parsedPayload = payload;
+    if (typeof payload === 'string') {
+        try {
+            parsedPayload = JSON.parse(payload);
+        } catch (e) {
+            parsedPayload = { rawValue: payload };
+        }
+    } else if (typeof payload !== 'object' || payload === null) {
+        parsedPayload = { rawValue: String(payload) }; // Ensure it's an object
+    }
+
+    // Store the latest state
+    deviceStates.set(deviceId, parsedPayload);
+
+    // --- UI Update Logic (Table & Card) ---
+
+    // Remove initial "Connecting..." row
     if (!firstMessageReceived && initialStatusRow) {
         if (initialStatusRow.parentNode === deviceTableBody) {
-            console.log('UI: updateTable - Removing initial status row.');
             deviceTableBody.removeChild(initialStatusRow);
         }
         firstMessageReceived = true;
-        // Assuming first real message means connection is established
-        if (connectionStatusText && connectionStatusText.textContent === 'Simulation Mode') {
-            // Don't override simulation status just because a simulated message arrived
-        } else {
+        // Set status to connected unless in Simulation mode
+        if (connectionStatusText && connectionStatusText.textContent !== 'Simulation Mode') {
              updateConnectionStatus('connected', 'Connected to MQTT Server');
         }
     }
 
-    // Update table view
-    let row = document.getElementById(`device-${deviceId}`);
-    const formattedStatus = formatStatus(payload);
+    // Format status based on type and payload
+    let formattedStatus = '';
+    if (isDimmer) {
+        const brightness = parsedPayload && parsedPayload.hasOwnProperty("operating status (brightness)")
+                            ? String(parsedPayload["operating status (brightness)"]) + '%'
+                            : (parsedPayload && parsedPayload.rawValue !== undefined ? String(parsedPayload.rawValue) : 'N/A');
+        formattedStatus = `Brightness: ${brightness}`;
+    } else {
+        // Generic status formatting
+        formattedStatus = formatStatus(parsedPayload); // Use existing helper
+    }
 
+    const statusTooltip = JSON.stringify(parsedPayload, null, 2); // Full payload for tooltip
+
+    // Find or create table row
+    let row = document.getElementById(`device-${deviceId}`);
     if (!row) {
-        console.log(`UI: updateTable - Creating row for ${deviceId}`);
-        // Create new row for table view
+        // Create new row
         row = deviceTableBody.insertRow();
         row.id = `device-${deviceId}`;
-        
+
         const cellId = row.insertCell(0);
         const cellType = row.insertCell(1);
         const cellStatus = row.insertCell(2);
         const cellActions = row.insertCell(3);
-        
-        cellId.textContent = deviceId;
+
+        cellId.textContent = getDeviceDisplayName(displayNameId);
         cellType.textContent = deviceType;
         cellStatus.textContent = formattedStatus;
-        cellStatus.title = JSON.stringify(payload, null, 2); // Add full payload as tooltip
-        
-        // Add action buttons
-        cellActions.appendChild(createActionButtons(deviceId, deviceType));
-        
-        // console.log(`UI: Added row for ${deviceId}`); // Redundant log
+        cellStatus.title = statusTooltip;
+        cellActions.appendChild(createActionButtons(deviceId, deviceType)); // Pass unified ID and type
     } else {
-        // Update existing row in table view
-        // console.log(`UI: updateTable - Updating row for ${deviceId}`);
+        // Update existing row
         const cellType = row.cells[1];
         const cellStatus = row.cells[2];
         const cellActions = row.cells[3];
-        
-        if (cellType.textContent !== deviceType && deviceType !== 'Unknown') {
-            cellType.textContent = deviceType; // Update type if it changed or became known
-        }
-        
+
+        if (cellType.textContent !== deviceType) cellType.textContent = deviceType;
         cellStatus.textContent = formattedStatus;
-        cellStatus.title = JSON.stringify(payload, null, 2); // Update tooltip
-        
-        // Update action buttons if needed
-        if (cellActions.firstChild) {
-             // Optimization: only update if type changed?
-            cellActions.replaceChild(createActionButtons(deviceId, deviceType), cellActions.firstChild);
-        } else {
-             cellActions.appendChild(createActionButtons(deviceId, deviceType));
-        }
+        cellStatus.title = statusTooltip;
+
+        // Update action buttons if needed (e.g., if type changed)
+        cellActions.replaceChild(createActionButtons(deviceId, deviceType), cellActions.firstChild);
     }
 
-    // Update card view
-    updateCardView(deviceId, deviceType, payload, formattedStatus);
+    // Update card view - Pass unified ID, payload, and derived type
+    updateCardView(deviceId, parsedPayload, deviceType);
 }
 
 // Function to update the card view
-function updateCardView(deviceId, deviceType, payload, formattedStatus) {
+// Simplified signature: accepts unified deviceId, payload, and deviceType
+function updateCardView(deviceId, payload, deviceType) {
+    if (!cardView) return; // Exit if container is missing
+
+    const displayName = getDeviceDisplayName(deviceId); // Get name using unified ID
+    const isDimmer = deviceType === 'DC_DIMMER';
+
+    // Format status based on type and payload (similar to updateTable)
+    let formattedStatus = '';
+    if (isDimmer) {
+        const brightness = payload && payload.hasOwnProperty("operating status (brightness)")
+                            ? String(payload["operating status (brightness)"]) + '%'
+                            : (payload && payload.rawValue !== undefined ? String(payload.rawValue) : 'N/A');
+        formattedStatus = `Brightness: ${brightness}`;
+    } else {
+        formattedStatus = formatStatus(payload); // Use existing helper
+    }
+    const statusTooltip = JSON.stringify(payload, null, 2); // Full payload for tooltip
+
     let card = document.getElementById(`card-${deviceId}`);
-        
     if (!card) {
-        // Create new card
+        // --- Create new card --- 
         card = document.createElement('div');
         card.id = `card-${deviceId}`;
         card.className = 'device-card';
+
+        card.innerHTML = `
+            <div class="device-card-header">
+                <div class="device-card-title">${displayName}</div>
+                <div class="device-card-type">${deviceType}</div>
+            </div>
+            <div class="device-card-status" title="${escapeHtml(statusTooltip)}">${formattedStatus}</div>
+            <div class="device-card-actions"></div>
+        `;
         
-        // Create card header
-        const cardHeader = document.createElement('div');
-        cardHeader.className = 'device-card-header';
+        const cardActions = card.querySelector('.device-card-actions');
+        cardActions.appendChild(createActionButtons(deviceId, deviceType)); // Use unified ID and type
         
-        const cardTitle = document.createElement('div');
-        cardTitle.className = 'device-card-title';
-        cardTitle.textContent = deviceId;
-        
-        const cardType = document.createElement('div');
-        cardType.className = 'device-card-type';
-        cardType.textContent = deviceType;
-        
-        cardHeader.appendChild(cardTitle);
-        cardHeader.appendChild(cardType);
-        
-        // Create card status
-        const cardStatus = document.createElement('div');
-        cardStatus.className = 'device-card-status';
-        cardStatus.textContent = formattedStatus;
-        
-        // Create card actions
-        const cardActions = document.createElement('div');
-        cardActions.className = 'device-card-actions';
-        
-        // Add control button
-        const controlBtn = document.createElement('button');
-        controlBtn.className = 'device-card-button';
-        controlBtn.textContent = 'Control Device';
-        controlBtn.addEventListener('click', () => selectDeviceForControl(deviceId));
-        
-        cardActions.appendChild(controlBtn);
-        
-        // Assemble card
-        card.appendChild(cardHeader);
-        card.appendChild(cardStatus);
-        card.appendChild(cardActions);
-        
-        // Add to card view
         cardView.appendChild(card);
     } else {
-        // Update existing card
+        // --- Update existing card --- 
+        const cardTitle = card.querySelector('.device-card-title');
         const cardType = card.querySelector('.device-card-type');
-        const cardStatus = card.querySelector('.device-card-status');
-        
-        if (cardType.textContent !== deviceType && deviceType !== 'Unknown') {
-            cardType.textContent = deviceType;
+        const cardStatusElement = card.querySelector('.device-card-status');
+        const cardActions = card.querySelector('.device-card-actions');
+
+        if (cardTitle) cardTitle.textContent = displayName;
+        if (cardType && cardType.textContent !== deviceType) cardType.textContent = deviceType;
+        if (cardStatusElement) {
+            cardStatusElement.textContent = formattedStatus;
+            cardStatusElement.title = statusTooltip;
         }
-        
-        cardStatus.textContent = formattedStatus;
+        // Recreate/update action buttons
+        if (cardActions) {
+            cardActions.replaceChild(createActionButtons(deviceId, deviceType), cardActions.firstChild);
+        }
     }
 }
+
+// Helper to escape HTML for tooltips/attributes
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') {
+        unsafe = JSON.stringify(unsafe); // Ensure it's a string
+    }
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
 
 // Fetch logs from the server
 async function fetchAndDisplayLogs() {
@@ -544,7 +611,7 @@ async function fetchAndDisplayLogs() {
             
             const date = new Date(log.timestamp);
             cellTimestamp.textContent = date.toLocaleString();
-            cellDevice.textContent = log.deviceId;
+            cellDevice.textContent = getDeviceDisplayName(log.deviceId); // Use display name
             cellEvent.textContent = log.event;
             
             try {
@@ -575,6 +642,107 @@ async function exportLogsToCSV() {
     } catch (error) {
         console.error('Error exporting logs:', error);
         alert(`Error exporting logs: ${error.message}`);
+    }
+}
+
+// ==================================================================================
+// Device Control Modal Logic
+// ==================================================================================
+
+const deviceControlModal = document.getElementById('deviceControlModal');
+const modalDeviceName = document.getElementById('modalDeviceName');
+const modalDeviceIdInput = document.getElementById('modalDeviceId');
+const brightnessSlider = document.getElementById('brightnessSlider');
+const brightnessValueSpan = document.getElementById('brightnessValue');
+
+// Update brightness value display when slider changes
+if (brightnessSlider) {
+    brightnessSlider.oninput = function() {
+        brightnessValueSpan.textContent = this.value;
+    }
+}
+
+// Function to open the modal and populate it with device info
+function openControlModal(deviceId, displayName) {
+    console.log(`UI: Opening control modal for ${deviceId} (${displayName})`);
+    if (!deviceControlModal) {
+        console.error("UI Error: Device control modal element not found!");
+        return;
+    }
+    modalDeviceName.textContent = displayName; // Use the friendly name
+    modalDeviceIdInput.value = deviceId; // Store the *actual* device ID (e.g., DC_DIMMER_COMMAND_2_50)
+    
+    // TODO: Optionally fetch current brightness from deviceStates and set slider initial value?
+    // const currentState = deviceStates.get(deviceId);
+    // if (currentState && currentState.hasOwnProperty('desired level')) {
+    //    brightnessSlider.value = currentState['desired level'];
+    //    brightnessValueSpan.textContent = currentState['desired level'];
+    // } else {
+    //    brightnessSlider.value = 50; // Default if state unknown
+    //    brightnessValueSpan.textContent = 50;
+    // }
+
+    deviceControlModal.classList.remove('hidden');
+}
+
+// Function to close the modal
+function closeControlModal() {
+    if (deviceControlModal) {
+        deviceControlModal.classList.add('hidden');
+    }
+}
+
+// Function to send a dimmer command via MQTT
+function sendDimmerCommand(commandCode) {
+    const deviceId = modalDeviceIdInput.value;
+    if (!deviceId) {
+        console.error("UI Error: No device ID selected in modal.");
+        return;
+    }
+
+    // Extract instance number from the deviceId (e.g., "DC_DIMMER_COMMAND_2_50" -> 50)
+    const match = deviceId.match(/_(\d+)$/); 
+    if (!match || !match[1]) {
+        console.error(`UI Error: Could not extract instance number from deviceId: ${deviceId}`);
+        return;
+    }
+    const instance = parseInt(match[1], 10);
+
+    // Construct the payload based on the command code
+    const payload = { 
+        command: commandCode,
+        instance: instance
+    };
+
+    // Add brightness if command is Set Level (0)
+    if (commandCode === 0 && brightnessSlider) { 
+        payload.brightness = parseInt(brightnessSlider.value, 10);
+    }
+    
+    // Add time parameter if needed for future commands (e.g., 1, 2, 3)
+    // if ([1, 2, 3].includes(commandCode)) { payload.time = /* get time value */; }
+
+    // Construct the MQTT topic (assuming a control topic structure)
+    // IMPORTANT: Adjust this topic if your backend expects something different!
+    const topic = `RVC/DC_DIMMER_COMMAND_2/${instance}/set`; 
+
+    console.log(`UI: Sending command to ${topic} with payload:`, JSON.stringify(payload));
+    
+    // Publish using the globally available MQTT client from main.js
+    if (window.mqttClient && window.mqttClient.connected) {
+        window.mqttClient.publish(topic, JSON.stringify(payload), { qos: 0 }, (err) => {
+            if (err) {
+                console.error('UI Error: Failed to publish MQTT command:', err);
+                // TODO: Show user feedback
+            } else {
+                console.log(`UI: Command ${commandCode} published successfully for ${deviceId}`);
+                // Optionally close modal after sending? Or keep it open?
+                // closeControlModal(); 
+            }
+        });
+    } else {
+        console.error('UI Error: MQTT client not connected or not available.');
+        // TODO: Show user feedback
     }
 }
 

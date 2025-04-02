@@ -18,7 +18,12 @@ const TOPIC_PREFIX = 'RVC';
 
 // Global MQTT client reference
 let mqttClient = null;
+window.mqttClient = null; // Make client globally accessible
 let simulationMode = false;
+
+// Rate limiting variables
+const UI_UPDATE_INTERVAL_MS = 1000 / 15; // Approx 15 updates per second
+let lastUiUpdateTime = 0;
 
 /**
  * Initialize MQTT connection and reporting
@@ -39,17 +44,21 @@ function initializeMqtt() {
         // The server has Mosquitto configured but WebSockets might not be accessible
         // We'll try to connect with a quick timeout and fallback to simulation mode
         
-        const mqttHost = 'ws://localhost:9001'; // WebSocket protocol
+        const mqttHost = 'ws://100.110.189.122:9001'; // New Host IP
         const options = {
             clientId: `rvc_ha_ui_${Math.random().toString(16).substr(2, 8)}`,
-            username: 'admin', // Replace with your MQTT username
-            password: 'rvpass', // Replace with your MQTT password
+            username: 'rc', // New username
+            password: 'rc', // New password
             reconnectPeriod: 5000, // Try reconnecting every 5 seconds
             connectTimeout: 10000, // Connection attempt timeout
         };
 
         console.log(`MQTT: Attempting to connect to ${mqttHost}`);
-        const client = mqtt.connect(mqttHost, options);
+        let client = null;
+        window.mqttClient = null; // Make client globally accessible
+        client = mqtt.connect(mqttHost, options);
+        window.mqttClient = client; // Assign to global variable
+        mqttClient = client; // Store client instance
 
         client.on('connect', function () {
             console.log('MQTT: Connected to broker');
@@ -69,19 +78,95 @@ function initializeMqtt() {
                     console.error('MQTT: Server status subscription error:', err);
                 }
             });
+            // Add subscription for Dimmer Commands
+            client.subscribe('RVC/DC_DIMMER_COMMAND_2/+', function (err) {
+                if (!err) {
+                    console.log('MQTT: Subscribed to dimmer command topics');
+                } else {
+                    console.error('MQTT: Dimmer subscription error:', err);
+                }
+            });
+            client.subscribe('RVC/DC_DIMMER_STATUS_3/+', function (err) {
+                if (!err) {
+                    console.log('MQTT: Subscribed to dimmer status topics');
+                } else {
+                    console.error('MQTT: Dimmer status subscription error:', err);
+                }
+            });
         });
 
-        client.on('message', function (topic, message) {
-            // message is Buffer, convert to string
-            const payloadString = message.toString();
-            // console.log(`MQTT: Received message on ${topic}: ${payloadString}`);
-            try {
-                const payload = JSON.parse(payloadString);
-                updateTable(topic, payload); // Update UI table
-            } catch (e) {
-                console.error(`MQTT: Error parsing JSON message on ${topic}:`, e, payloadString);
+        const throttle = (func, limit) => {
+            let inProgress = false;
+            return function(...args) {
+                if (!inProgress) {
+                    inProgress = true;
+                    func(...args);
+                    setTimeout(() => {
+                        inProgress = false;
+                    }, limit);
+                }
             }
-        });
+        };
+
+        client.on('message', throttle((topic, message) => {
+            const messageString = message.toString();
+            // console.log(`MQTT: Received raw message on ${topic}: ${messageString}`);
+
+            // --- Topic Parsing and Instance Filtering ---
+            let instance = null;
+            let instanceNum = NaN;
+            const topicParts = topic.split('/');
+
+            if (topic.startsWith('RVC/DC_DIMMER_COMMAND_2/') || topic.startsWith('RVC/DC_DIMMER_STATUS_3/')) {
+                instance = topicParts[topicParts.length - 1];
+                instanceNum = parseInt(instance, 10);
+                // Filter out instances outside the 25-60 range
+                if (isNaN(instanceNum) || instanceNum < 25 || instanceNum > 60) {
+                    // console.log(`MQTT: Ignoring dimmer message for instance ${instance} (outside 25-60 range)`);
+                    return; // Stop processing this message
+                }
+            }
+            // TODO: Add filtering for other device types if needed
+
+            // --- Payload Parsing ---
+            let payload = {};
+            try {
+                payload = JSON.parse(messageString);
+            } catch (e) {
+                // If not JSON, treat as raw value, potentially for dimmers or simple switches
+                payload = { rawValue: messageString }; 
+                // console.warn(`MQTT: Payload for ${topic} is not JSON. Treating as raw value: ${messageString}`);
+            }
+            
+            // --- Determine Device ID and Update UI ---
+            let deviceId = '';
+
+            // Handle DC_DIMMER_STATUS_3 and DC_DIMMER_COMMAND_2 messages
+            if (topic.startsWith('RVC/DC_DIMMER_STATUS_3/') || topic.startsWith('RVC/DC_DIMMER_COMMAND_2/')) {
+                if (instance) {
+                     // Always use the COMMAND_2 format for the unified device ID
+                    deviceId = `DC_DIMMER_COMMAND_2_${instance}`;
+                    // console.log(`MQTT: Processing dimmer message for ${topic} as DeviceID: ${deviceId}`);
+                    updateTable(deviceId, payload); // Pass unified deviceId and payload
+                } else {
+                    console.warn(`MQTT: Could not extract instance from dimmer topic: ${topic}`);
+                }
+            // Handle generic RVC/+/+/status messages (if any)
+            } else if (topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/)) {
+                 const statusMatch = topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/);
+                 const deviceType = statusMatch[1];
+                 const statusInstance = statusMatch[2];
+                 deviceId = `${deviceType}_${statusInstance}`;
+                 console.log(`MQTT: Processing generic status for ${topic} as DeviceID: ${deviceId}`);
+                 updateTable(topic, payload);
+            // Handle RVC/status/server message
+            } else if (topic === 'RVC/status/server') {
+                console.log(`MQTT: Processing server status: ${messageString}`);
+                updateTable(topic, payload);
+            } else {
+                console.log(`MQTT: Ignoring unhandled topic: ${topic}`);
+            }
+        }, 66)); // Approx 15 updates per second (1000ms / 15)
 
         client.on('error', function (error) {
             console.error('MQTT: Connection Error:', error);
