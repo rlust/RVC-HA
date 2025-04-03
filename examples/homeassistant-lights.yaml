@@ -1,0 +1,169 @@
+# Home Assistant MQTT Light Configuration for RVC-HA
+# Copy this file to your Home Assistant configuration directory
+
+# Bedroom Area Lights
+light:
+  - platform: mqtt
+    name: "Bed Ceiling A"
+    unique_id: rvc_bed_ceiling_a
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/25/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/25"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/25/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/25"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":25,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":25,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+    
+  - platform: mqtt
+    name: "Bed Ceiling B"
+    unique_id: rvc_bed_ceiling_b
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/26/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/26"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/26/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/26"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":26,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":26,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+
+  # Add similar configurations for other bedroom lights (27, 28, 56)
+
+# Bathroom Area Lights
+  - platform: mqtt
+    name: "Rear Bath Ceiling"
+    unique_id: rvc_rear_bath_ceiling
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/30/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/30"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/30/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/30"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":30,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":30,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+
+  # Add similar configurations for other bathroom lights (31-34)
+
+# Living Room Area Lights
+  - platform: mqtt
+    name: "Living Edge"
+    unique_id: rvc_living_edge
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/36/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/36"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/36/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/36"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":36,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":36,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+
+  # Add similar configurations for other living room lights (37-41)
+
+# Kitchen & Dining Area Lights
+  - platform: mqtt
+    name: "Kitchen Ceiling"
+    unique_id: rvc_kitchen_ceiling
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/42/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/42"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/42/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/42"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":42,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":42,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+
+  # Add similar configurations for other kitchen lights (45-46)
+
+# Entry & Common Areas
+  - platform: mqtt
+    name: "Entry Ceiling"
+    unique_id: rvc_entry_ceiling
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/35/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/35"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/35/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/35"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":35,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":35,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+
+  # Add similar configurations for other common area lights (29, 44, 47, 54)
+
+# Security & Exterior Lights
+  - platform: mqtt
+    name: "Porch Light"
+    unique_id: rvc_porch
+    command_topic: "RVC/DC_DIMMER_COMMAND_2/60/set"
+    state_topic: "RVC/DC_DIMMER_STATUS_2/60"
+    brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/60/set"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/60"
+    brightness_scale: 255
+    on_command_type: brightness
+    payload_on: '{"command":1,"instance":60,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    payload_off: '{"command":3,"instance":60,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
+    state_value_template: "{{ value_json.state }}"
+    brightness_value_template: "{{ value_json.brightness }}"
+
+  # Add similar configurations for other security lights (53, 57-59)
+
+# Light Groups
+light:
+  - platform: group
+    name: "Bedroom Lights"
+    unique_id: rvc_bedroom_group
+    entities:
+      - light.bed_ceiling_a
+      - light.bed_ceiling_b
+      - light.bed_accent
+      - light.bed_vanity
+      - light.bed_reading
+
+  - platform: group
+    name: "Living Room Lights"
+    unique_id: rvc_living_room_group
+    entities:
+      - light.living_edge
+      - light.livrm_ceiling_a
+      - light.livrm_ceiling_b
+      - light.livrm_accent_a
+      - light.livrm_accent_b
+      - light.sofa_ceiling
+
+  - platform: group
+    name: "Bathroom Lights"
+    unique_id: rvc_bathroom_group
+    entities:
+      - light.rear_bath_ceiling
+      - light.rear_bath_lav_lts
+      - light.rear_bath_accent
+      - light.mid_bath_ceiling
+      - light.mid_bath_accent
+
+  - platform: group
+    name: "Kitchen Lights"
+    unique_id: rvc_kitchen_group
+    entities:
+      - light.kitchen_ceiling
+      - light.dinette
+      - light.sink
+
+  - platform: group
+    name: "Security Lights"
+    unique_id: rvc_security_group
+    entities:
+      - light.security_ds
+      - light.security_ps
+      - light.security_motion
+      - light.porch
