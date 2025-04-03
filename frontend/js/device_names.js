@@ -41,6 +41,14 @@ export const deviceNameMapping = {
     "DC_DIMMER_COMMAND_2_59": "Security Motion",
     "DC_DIMMER_COMMAND_2_60": "Porch",
 
+    // Water Heater Status ID
+    "WATERHEATER_STATUS_1": "Water Heater",
+
+    // Air Conditioner Status IDs
+    "AIR_CONDITIONER_STATUS_1": "Front HVAC",
+    "AIR_CONDITIONER_STATUS_2": "Middle HVAC",
+    "AIR_CONDITIONER_STATUS_3": "Rear HVAC",
+
     // Add other device types and instances here if needed
     // e.g., "SWITCH_COMMAND_1_16": "Water Pump",
 };

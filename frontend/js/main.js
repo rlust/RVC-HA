@@ -5,10 +5,7 @@ import { MQTT_CONFIG, API_BASE_URL, API_AUTH } from './config.js';
 import { 
     updateTable, 
     updateCardView, 
-    updateConnectionStatus, 
-    setupUiElements, 
-    fetchLogs, 
-    exportLogs 
+    updateConnectionStatus
 } from './ui.js';
 import { sendCommand, setMqttClient } from './api.js';
 
@@ -24,6 +21,17 @@ let simulationMode = false;
 // Rate limiting variables
 const UI_UPDATE_INTERVAL_MS = 1000 / 15; // Approx 15 updates per second
 let lastUiUpdateTime = 0;
+
+// --- Initialization --- 
+
+// Function to initialize the application
+function initializeApp() {
+    console.log('Main: Initializing application after DOM ready...');
+    initializeMqtt(); // Attempt MQTT connection
+}
+
+// Wait for the DOM to be fully loaded before initializing
+document.addEventListener('DOMContentLoaded', initializeApp);
 
 /**
  * Initialize MQTT connection and reporting
@@ -117,54 +125,81 @@ function initializeMqtt() {
             let instanceNum = NaN;
             const topicParts = topic.split('/');
 
-            if (topic.startsWith('RVC/DC_DIMMER_COMMAND_2/') || topic.startsWith('RVC/DC_DIMMER_STATUS_3/')) {
-                instance = topicParts[topicParts.length - 1];
-                instanceNum = parseInt(instance, 10);
-                // Filter out instances outside the 25-60 range
-                if (isNaN(instanceNum) || instanceNum < 25 || instanceNum > 60) {
-                    // console.log(`MQTT: Ignoring dimmer message for instance ${instance} (outside 25-60 range)`);
-                    return; // Stop processing this message
-                }
+            // Match WATERHEATER_STATUS
+            const whMatch = topic.match(/^RVC\/WATERHEATER_STATUS\/(\d+)$/);
+            if (whMatch) {
+                const instance = whMatch[1];
+                const deviceId = `WATERHEATER_STATUS_${instance}`;
+                console.log(`MQTT: Processing Water Heater status for ${topic} as DeviceID: ${deviceId}`);
+                updateTable(deviceId, messageString); // Use messageString
+                return; // Handled
             }
-            // TODO: Add filtering for other device types if needed
 
-            // --- Payload Parsing ---
-            let payload = {};
-            try {
-                payload = JSON.parse(messageString);
-            } catch (e) {
-                // If not JSON, treat as raw value, potentially for dimmers or simple switches
-                payload = { rawValue: messageString }; 
-                // console.warn(`MQTT: Payload for ${topic} is not JSON. Treating as raw value: ${messageString}`);
+            // Match AIR_CONDITIONER_STATUS
+            const acMatch = topic.match(/^RVC\/AIR_CONDITIONER_STATUS\/(\d+)$/);
+            if (acMatch) {
+                const instance = acMatch[1];
+                const deviceId = `AIR_CONDITIONER_STATUS_${instance}`;
+                console.log(`MQTT: Processing Air Conditioner status for ${topic} as DeviceID: ${deviceId}`);
+                updateTable(deviceId, messageString); // Use messageString
+                return; // Handled
             }
-            
-            // --- Determine Device ID and Update UI ---
-            let deviceId = '';
 
             // Handle DC_DIMMER_STATUS_3 and DC_DIMMER_COMMAND_2 messages
             if (topic.startsWith('RVC/DC_DIMMER_STATUS_3/') || topic.startsWith('RVC/DC_DIMMER_COMMAND_2/')) {
-                if (instance) {
-                     // Always use the COMMAND_2 format for the unified device ID
-                    deviceId = `DC_DIMMER_COMMAND_2_${instance}`;
-                    // console.log(`MQTT: Processing dimmer message for ${topic} as DeviceID: ${deviceId}`);
-                    updateTable(deviceId, payload); // Pass unified deviceId and payload
-                } else {
-                    console.warn(`MQTT: Could not extract instance from dimmer topic: ${topic}`);
+                // Extract instance again specifically for dimmers
+                const dimmerInstanceMatch = topic.match(/\/(\d+)(\/set)?$/);
+                const dimmerInstance = dimmerInstanceMatch ? dimmerInstanceMatch[1] : null;
+                if (dimmerInstance) {
+                    // Filter dimmer instances
+                    const instanceNum = parseInt(dimmerInstance, 10);
+                    if (isNaN(instanceNum) || instanceNum < 25 || instanceNum > 60) {
+                        console.log(`MQTT: Ignoring dimmer instance ${dimmerInstance} (outside 25-60 range)`);
+                        return; // Stop processing this message
+                    }
+                    // Always use the COMMAND_2 format for the unified device ID
+                    const deviceId = `DC_DIMMER_COMMAND_2_${dimmerInstance}`;
+                    console.log(`MQTT: Processing dimmer message for ${topic} as DeviceID: ${deviceId}`);
+                    updateTable(deviceId, messageString); // Pass unified deviceId and messageString
+                    return; // Handled
                 }
+            }
+
             // Handle generic RVC/+/+/status messages (if any)
-            } else if (topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/)) {
-                 const statusMatch = topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/);
-                 const deviceType = statusMatch[1];
-                 const statusInstance = statusMatch[2];
-                 deviceId = `${deviceType}_${statusInstance}`;
-                 console.log(`MQTT: Processing generic status for ${topic} as DeviceID: ${deviceId}`);
-                 updateTable(topic, payload);
-            // Handle RVC/status/server message
-            } else if (topic === 'RVC/status/server') {
-                console.log(`MQTT: Processing server status: ${messageString}`);
-                updateTable(topic, payload);
-            } else {
-                console.log(`MQTT: Ignoring unhandled topic: ${topic}`);
+            if (topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/)) {
+                const statusMatch = topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/);
+                const deviceType = statusMatch[1];
+                const statusInstance = statusMatch[2];
+                const deviceId = `${deviceType}_${statusInstance}`;
+                console.log(`MQTT: Processing generic RVC status for ${topic} as DeviceID: ${deviceId}`);
+                updateTable(deviceId, messageString);
+                return; // Handled
+            }
+
+            // Handle server status
+            if (topic === 'RVC/status/server') {
+                console.log('MQTT: Received server status update:', messageString);
+                try {
+                    const serverStatus = JSON.parse(messageString);
+                    if (serverStatus && serverStatus.state === 'online') {
+                        updateConnectionStatus('connected', 'Connected to MQTT Server');
+                    } else {
+                        // Handle cases where state is not 'online' or message is invalid JSON
+                        updateConnectionStatus('disconnected', 'MQTT Server Status: ' + (serverStatus ? serverStatus.state : 'Unknown/Invalid'));
+                    }
+                } catch (e) {
+                    console.error("MQTT: Failed to parse server status JSON:", e, "Raw message:", messageString);
+                    updateConnectionStatus('error', 'Error parsing server status');
+                }
+                return; // Handled
+            }
+
+            // Optional: Log unhandled messages
+            if (!deviceId) { // If none of the above matched
+                // Ignore homeassistant topics silently if desired
+                if (!topic.startsWith('homeassistant/')) {
+                    console.log(`MQTT: Unhandled message topic: ${topic}`);
+                }
             }
         }, 66)); // Approx 15 updates per second (1000ms / 15)
 
@@ -264,25 +299,6 @@ function generateSimulatedData() {
     
     console.log('Updated simulated device data');
 }
-
-// Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing application');
-    
-    // Explicitly initialize UI DOM references now that DOM is ready
-    setupUiElements();
-    
-    // Set up command button handlers
-    document.querySelectorAll('[data-command]').forEach(button => {
-        button.addEventListener('click', handleCommandButton);
-    });
-    
-    // Initialize MQTT or simulation mode
-    initializeMqtt();
-    
-    // Fetch initial logs
-    setTimeout(fetchLogs, 1500);
-});
 
 // Handle command button clicks
 function handleCommandButton(event) {
