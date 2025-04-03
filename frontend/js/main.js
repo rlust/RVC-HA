@@ -1,7 +1,7 @@
 // frontend/js/main.js
 
 // Import necessary functions from modules
-import { MQTT_CONFIG, API_BASE_URL, API_AUTH } from './config.js'; 
+import { MQTT_CONFIG } from './config.js'; 
 import { 
     updateTable, 
     updateCardView, 
@@ -11,294 +11,264 @@ import { sendCommand, setMqttClient } from './api.js';
 
 // MQTT configuration
 const CLIENT_ID = `rvha_frontend_${Math.random().toString(16).slice(2, 8)}`;
-const TOPIC_PREFIX = 'RVC';
+const TOPIC_PREFIX = MQTT_CONFIG.mqttBaseTopic;
 
 // Global MQTT client reference
 let mqttClient = null;
-window.mqttClient = null; // Make client globally accessible
+let client = null;
+let reconnectTimeout = null; // Ensure declared once
 let simulationMode = false;
 
 // Rate limiting variables
-const UI_UPDATE_INTERVAL_MS = 1000 / 15; // Approx 15 updates per second
+const UI_UPDATE_INTERVAL_MS = 20; // Target 50 updates per second (1000 / 50)
 let lastUiUpdateTime = 0;
 
 // --- Initialization --- 
-
-// Function to initialize the application
-function initializeApp() {
-    console.log('Main: Initializing application after DOM ready...');
-    initializeMqtt(); // Attempt MQTT connection
-}
-
-// Wait for the DOM to be fully loaded before initializing
-document.addEventListener('DOMContentLoaded', initializeApp);
 
 /**
  * Initialize MQTT connection and reporting
  */
 function initializeMqtt() {
-    // Start with connecting status
-    updateConnectionStatus('connecting', 'Initializing connection...');
-    
-    // Check if mqtt library is available
-    if (typeof window.mqtt === 'undefined') {
-        console.error('MQTT library not available');
-        updateConnectionStatus('error', 'MQTT library not available');
-        enableSimulationMode();
+    // Check if MQTT client is supported
+    if (typeof mqtt === 'undefined') {
+        console.error("MQTT client library not loaded. Include mqtt.min.js.");
+        updateConnectionStatus('error', 'MQTT Library Error');
         return;
     }
-    
-    try {
-        // The server has Mosquitto configured but WebSockets might not be accessible
-        // We'll try to connect with a quick timeout and fallback to simulation mode
-        
-        const mqttHost = 'ws://100.110.189.122:9001'; // New Host IP
-        const options = {
-            clientId: `rvc_ha_ui_${Math.random().toString(16).substr(2, 8)}`,
-            username: 'rc', // New username
-            password: 'rc', // New password
-            reconnectPeriod: 5000, // Try reconnecting every 5 seconds
-            connectTimeout: 10000, // Connection attempt timeout
-        };
 
-        console.log(`MQTT: Attempting to connect to ${mqttHost}`);
-        let client = null;
-        window.mqttClient = null; // Make client globally accessible
-        client = mqtt.connect(mqttHost, options);
-        window.mqttClient = client; // Assign to global variable
-        mqttClient = client; // Store client instance
+    /* --- TEMPORARILY DISABLED SIMULATION MODE CHECK --- 
+    // Determine if running locally (for simulation)
+    simulationMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-        client.on('connect', function () {
-            console.log('MQTT: Connected to broker');
-            updateConnectionStatus('connected', 'Connected to MQTT Server');
-            // Subscribe to relevant topics
-            client.subscribe('RVC/status/+/state', function (err) {
-                if (!err) {
-                    console.log('MQTT: Subscribed to device status topics');
-                } else {
-                    console.error('MQTT: Subscription error:', err);
-                }
-            });
-            client.subscribe('RVC/status/server', function (err) {
-                if (!err) {
-                    console.log('MQTT: Subscribed to server status topic');
-                } else {
-                    console.error('MQTT: Server status subscription error:', err);
-                }
-            });
-            // Add subscription for Dimmer Commands
-            client.subscribe('RVC/DC_DIMMER_COMMAND_2/+', function (err) {
-                if (!err) {
-                    console.log('MQTT: Subscribed to dimmer command topics');
-                } else {
-                    console.error('MQTT: Dimmer subscription error:', err);
-                }
-            });
-            client.subscribe('RVC/DC_DIMMER_STATUS_3/+', function (err) {
-                if (!err) {
-                    console.log('MQTT: Subscribed to dimmer status topics');
-                } else {
-                    console.error('MQTT: Dimmer status subscription error:', err);
-                }
-            });
-        });
-
-        const throttle = (func, limit) => {
-            let inProgress = false;
-            return function(...args) {
-                if (!inProgress) {
-                    inProgress = true;
-                    func(...args);
-                    setTimeout(() => {
-                        inProgress = false;
-                    }, limit);
-                }
-            }
-        };
-
-        client.on('message', throttle((topic, message) => {
-            const messageString = message.toString();
-            // console.log(`MQTT: Received raw message on ${topic}: ${messageString}`);
-
-            // --- Topic Parsing and Instance Filtering ---
-            let instance = null;
-            let instanceNum = NaN;
-            const topicParts = topic.split('/');
-
-            // Match WATERHEATER_STATUS
-            const whMatch = topic.match(/^RVC\/WATERHEATER_STATUS\/(\d+)$/);
-            if (whMatch) {
-                const instance = whMatch[1];
-                const deviceId = `WATERHEATER_STATUS_${instance}`;
-                console.log(`MQTT: Processing Water Heater status for ${topic} as DeviceID: ${deviceId}`);
-                updateTable(deviceId, messageString); // Use messageString
-                return; // Handled
-            }
-
-            // Match AIR_CONDITIONER_STATUS
-            const acMatch = topic.match(/^RVC\/AIR_CONDITIONER_STATUS\/(\d+)$/);
-            if (acMatch) {
-                const instance = acMatch[1];
-                const deviceId = `AIR_CONDITIONER_STATUS_${instance}`;
-                console.log(`MQTT: Processing Air Conditioner status for ${topic} as DeviceID: ${deviceId}`);
-                updateTable(deviceId, messageString); // Use messageString
-                return; // Handled
-            }
-
-            // Handle DC_DIMMER_STATUS_3 and DC_DIMMER_COMMAND_2 messages
-            if (topic.startsWith('RVC/DC_DIMMER_STATUS_3/') || topic.startsWith('RVC/DC_DIMMER_COMMAND_2/')) {
-                // Extract instance again specifically for dimmers
-                const dimmerInstanceMatch = topic.match(/\/(\d+)(\/set)?$/);
-                const dimmerInstance = dimmerInstanceMatch ? dimmerInstanceMatch[1] : null;
-                if (dimmerInstance) {
-                    // Filter dimmer instances
-                    const instanceNum = parseInt(dimmerInstance, 10);
-                    if (isNaN(instanceNum) || instanceNum < 25 || instanceNum > 60) {
-                        console.log(`MQTT: Ignoring dimmer instance ${dimmerInstance} (outside 25-60 range)`);
-                        return; // Stop processing this message
-                    }
-                    // Always use the COMMAND_2 format for the unified device ID
-                    const deviceId = `DC_DIMMER_COMMAND_2_${dimmerInstance}`;
-                    console.log(`MQTT: Processing dimmer message for ${topic} as DeviceID: ${deviceId}`);
-                    updateTable(deviceId, messageString); // Pass unified deviceId and messageString
-                    return; // Handled
-                }
-            }
-
-            // Handle generic RVC/+/+/status messages (if any)
-            if (topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/)) {
-                const statusMatch = topic.match(/^RVC\/([^\/]+)\/([^\/]+)\/status$/);
-                const deviceType = statusMatch[1];
-                const statusInstance = statusMatch[2];
-                const deviceId = `${deviceType}_${statusInstance}`;
-                console.log(`MQTT: Processing generic RVC status for ${topic} as DeviceID: ${deviceId}`);
-                updateTable(deviceId, messageString);
-                return; // Handled
-            }
-
-            // Handle server status
-            if (topic === 'RVC/status/server') {
-                console.log('MQTT: Received server status update:', messageString);
+    if (simulationMode) {
+        console.warn("Running in simulation mode. No actual MQTT connection.");
+        updateConnectionStatus('simulation', 'Simulation Mode');
+        // Simulate some device data after a short delay
+        setTimeout(simulateInitialDevices, 1000);
+        // Set window.mqttClient to a dummy object for modal commands in simulation
+        window.mqttClient = {
+            publish: (topic, payload, options, callback) => {
+                console.log(`SIMULATION: Publish to ${topic}: ${payload}`);
+                // Simulate a dimmer status update after setting brightness
                 try {
-                    const serverStatus = JSON.parse(messageString);
-                    if (serverStatus && serverStatus.state === 'online') {
-                        updateConnectionStatus('connected', 'Connected to MQTT Server');
-                    } else {
-                        // Handle cases where state is not 'online' or message is invalid JSON
-                        updateConnectionStatus('disconnected', 'MQTT Server Status: ' + (serverStatus ? serverStatus.state : 'Unknown/Invalid'));
+                    const data = JSON.parse(payload);
+                    if (topic.includes('DC_DIMMER_COMMAND_2') && data.command === 0 && data.brightness !== undefined) {
+                        const instanceMatch = topic.match(/_(\d+)\/set$/);
+                        if (instanceMatch) {
+                            const instance = instanceMatch[1];
+                            const statusTopic = `RVC/DC_DIMMER_COMMAND_2_${instance}`;
+                            const statusPayload = JSON.stringify({ "operating status (brightness)": data.brightness });
+                            console.log(`SIMULATION: Simulating status update for ${statusTopic}: ${statusPayload}`);
+                            setTimeout(() => handleMqttMessage(statusTopic, statusPayload), 200); // Simulate delay
+                        }
                     }
-                } catch (e) {
-                    console.error("MQTT: Failed to parse server status JSON:", e, "Raw message:", messageString);
-                    updateConnectionStatus('error', 'Error parsing server status');
-                }
-                return; // Handled
-            }
-
-            // Optional: Log unhandled messages
-            if (!deviceId) { // If none of the above matched
-                // Ignore homeassistant topics silently if desired
-                if (!topic.startsWith('homeassistant/')) {
-                    console.log(`MQTT: Unhandled message topic: ${topic}`);
-                }
-            }
-        }, 66)); // Approx 15 updates per second (1000ms / 15)
-
-        client.on('error', function (error) {
-            console.error('MQTT: Connection Error:', error);
-            updateConnectionStatus('error', `Error: ${error.message}`);
-            // Optionally switch to simulation mode on persistent errors
-            // enableSimulationMode(); 
-        });
-
-        client.on('reconnect', function () {
-            console.log('MQTT: Reconnecting...');
-            updateConnectionStatus('reconnecting', 'Reconnecting...');
-        });
-
-        client.on('offline', function () {
-            console.log('MQTT: Client offline');
-            updateConnectionStatus('disconnected', 'Connection Offline');
-            // enableSimulationMode(); // Switch to simulation if offline
-        });
-
-        client.on('close', function () {
-            console.log('MQTT: Connection closed');
-            updateConnectionStatus('disconnected', 'Connection Closed');
-            // Don't automatically enable simulation on close if user might restart broker
-            // Consider adding a button to manually enable simulation? 
-            // enableSimulationMode(); 
-        });
-
-    } catch (error) {
-        console.error('Error creating MQTT client:', error);
-        updateConnectionStatus('error', `Error: ${error.message}`);
-        enableSimulationMode(); // Fallback to simulation mode
+                } catch (e) { console.error("SIMULATION: Error parsing simulated command payload", e); }
+                if (callback) callback(); // Call the callback immediately
+            },
+            // Add dummy subscribe/unsubscribe if needed by other parts, though not strictly required for publish
+            subscribe: (topic, options, callback) => { console.log(`SIMULATION: Subscribe to ${topic}`); if(callback) callback(); },
+            unsubscribe: (topic, options, callback) => { console.log(`SIMULATION: Unsubscribe from ${topic}`); if(callback) callback(); },
+        };
+        return; // Don't attempt to connect in simulation mode
     }
-}
+    */
 
-/**
- * Set up topic subscriptions (for when connection works)
- */
-function setupSubscriptions() {
-    if (!mqttClient) return;
-    
-    mqttClient.subscribe(`${TOPIC_PREFIX}/status/#`, function(err) {
-        if (err) {
-            console.error('Error subscribing to topics:', err);
-        } else {
-            console.log('Subscribed to device status topics');
+    const connectUrl = `ws://${MQTT_CONFIG.mqttBroker}:${MQTT_CONFIG.mqttPort}`;
+    console.log(`Attempting to connect to MQTT broker at ${connectUrl}`);
+    updateConnectionStatus('connecting', 'Connecting...');
+
+    // Basic MQTT options
+    const options = {
+        clientId: MQTT_CONFIG.mqttClientId + Math.random().toString(16).substring(2, 8),
+        connectTimeout: 4000,
+        username: MQTT_CONFIG.mqttUsername,
+        password: MQTT_CONFIG.mqttPassword,
+        clean: true, // Start with a clean session
+        reconnectPeriod: 0 // Disable automatic reconnect, we handle it manually
+    };
+
+    try {
+        client = mqtt.connect(connectUrl, options); // Assign to the module-scoped client
+    } catch (error) { // This catch might not be necessary if mqtt.connect doesn't throw synchronously often
+        console.error("MQTT connection failed (initial connect call):", error);
+        console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error))); // Log more details
+        updateConnectionStatus('error', 'Connection Error');
+        scheduleReconnect();
+        return;
+    }
+
+    // --- MQTT Event Handlers ---
+
+    client.on('connect', function () {
+        console.log('MQTT client connected');
+        window.mqttClient = client; // Assign to window ONLY after successful connect
+        updateConnectionStatus('connected', 'Connected');
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout);
+        }
+
+        // Subscribe to base topics
+        client.subscribe(`${MQTT_CONFIG.mqttBaseTopic}/#`, function (err) {
+            if (!err) {
+                console.log(`Subscribed to base topic: ${MQTT_CONFIG.mqttBaseTopic}/#`);
+            } else {
+                console.error(`Failed to subscribe to base topic: ${err}`);
+            }
+        });
+
+        client.subscribe('RVC/status/server', function (err) {
+            if (!err) {
+                console.log('Subscribed to RVC/status/server');
+            } else {
+                console.error('Failed to subscribe to RVC/status/server: ', err);
+            }
+        });
+
+        // TODO: Add other necessary subscriptions here (e.g., specific device status)
+        // Example for dimmer status (if not covered by base topic wildcard)
+        // client.subscribe('RVC/DC_DIMMER_COMMAND_2/+/status', function (err) { ... });
+
+    });
+
+    client.on('message', function (topic, message) {
+        const messageString = message.toString();
+        console.log(`Received message on ${topic}: ${messageString}`);
+        handleMqttMessage(topic, messageString);
+    });
+
+    client.on('error', function (error) {
+        console.error('MQTT client runtime error:', error);
+        console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error))); // Log more details
+        updateConnectionStatus('error', 'MQTT Error');
+        // Don't automatically close here, 'close' event will handle reconnect
+    });
+
+    client.on('close', function () {
+        console.log('MQTT connection closed.');
+        updateConnectionStatus('disconnected', 'Disconnected');
+        window.mqttClient = null; // Clear global reference
+        if (!simulationMode) {
+            scheduleReconnect();
         }
     });
+
+    client.on('offline', function () {
+        console.log('MQTT client is offline.');
+        updateConnectionStatus('disconnected', 'Client Offline');
+        window.mqttClient = null; // Clear global reference
+        // Reconnect might be attempted by 'close' event
+    });
+
+    client.on('reconnect', function () {
+        console.log('MQTT client attempting to reconnect...');
+        updateConnectionStatus('connecting', 'Reconnecting...');
+    });
 }
 
-/**
- * Enable simulation mode with realistic data
- */
-function enableSimulationMode() {
-    if (simulationMode) {
-        return; // Prevent multiple activations
+// Function to handle incoming MQTT messages and route to UI
+function handleMqttMessage(topic, messageString) {
+    // Basic validation
+    if (!topic || typeof messageString !== 'string') {
+        console.warn("handleMqttMessage: Invalid topic or messageString received", topic, messageString);
+        return;
     }
-    
-    console.log('Activating simulation mode');
-    simulationMode = true;
-    updateConnectionStatus('simulation', 'Simulation Mode');
-    
-    // Generate realistic device data
-    setTimeout(generateSimulatedData, 1000);
-    
-    // Set up periodic data updates
-    setInterval(generateSimulatedData, 15000);
+
+    // 1. Parse the payload
+    let payload = {};
+    try {
+        payload = JSON.parse(messageString);
+    } catch (e) {
+        console.error(`Failed to parse JSON for topic ${topic}:`, messageString, e);
+        // Decide how to handle non-JSON or malformed messages
+        // Option 1: Treat as simple string status
+        payload = { status: messageString }; 
+        // Option 2: Ignore
+        // return; 
+    }
+
+    // 2. Extract Device ID (full topic) and Device Type
+    const deviceId = topic;
+    let deviceType = 'Unknown'; 
+ 
+    // Refined Topic Parsing Logic
+    const parts = topic.split('/');
+    if (parts.length >= 3 && parts[0] === 'RVC') {
+        // Pattern 1: RVC/TYPE_INSTANCE/INSTANCE_VALUE/... (e.g., RVC/DC_DIMMER_STATUS_3/27)
+        const potentialTypeWithInstance = parts[1];
+        // Check if parts[1] looks like TYPE_INSTANCE (contains _STATUS_ or _COMMAND_ followed by _DIGIT)
+        if ((potentialTypeWithInstance.includes('_STATUS_') || potentialTypeWithInstance.includes('_COMMAND_')) && /_\d+$/.test(potentialTypeWithInstance)) {
+            deviceType = potentialTypeWithInstance; // Use the full TYPE_INSTANCE string
+        } 
+        // Pattern 2: RVC/TYPE/INSTANCE/... (e.g., RVC/AIR_CONDITIONER_STATUS/1)
+        else if (!isNaN(parseInt(parts[2], 10))) {
+             // Check if parts[1] is just the TYPE part (doesn't contain _DIGIT at the end)
+             if (!/_\d+$/.test(parts[1])) { 
+                deviceType = `${parts[1]}_${parts[2]}`; // Construct type like WATERHEATER_STATUS_1
+             } else {
+                 // Fallback if parts[1] looked like TYPE_INSTANCE but didn't match pattern 1
+                 deviceType = parts[1];
+             }
+        } 
+        // Fallback: Maybe the second part is just the type (if no instance)
+        else {
+             deviceType = parts[1]; // e.g., RVC/ATS_STATUS -> ATS_STATUS
+        }
+    } else if (parts.length === 2 && parts[0] === 'RVC') {
+        // Handle simpler topics like RVC/status
+        deviceType = parts[1];
+    } 
+    // Add specific known topic mappings if needed
+    else if (topic === 'RVC/status/server') {
+        deviceType = 'ServerStatus';
+        // Handle server status message specifically if needed
+        console.log(`Server Status: ${messageString}`);
+        // Potentially update a dedicated status element, not the device table
+        // return; // Don't add server status to the device table
+    }
+
+    console.log(`[handleMqttMessage] Parsed - ID: ${deviceId}, Type: ${deviceType}, Payload:`, payload); // DEBUG
+
+    // 3. Update UI (send parsed payload and extracted type)
+    // Rate limiting check
+    const now = Date.now();
+    // TEMPORARILY DISABLED Rate Limit Check
+    // if (now - lastUiUpdateTime > UI_UPDATE_INTERVAL_MS) {
+        updateTable(deviceId, payload, deviceType); // Pass parsed payload and type
+        // lastUiUpdateTime = now;
+    // } else {
+    //     // Optional: Queue update or simply drop it to avoid flooding
+    //     console.log(`[Rate Limit] Skipping UI update for ${deviceId}`);
+    // }
+ }
+
+// Function to schedule reconnection attempts
+function scheduleReconnect() {
+    if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+    }
+    console.log(`Scheduling reconnect in ${MQTT_CONFIG.reconnectDelay / 1000} seconds...`);
+    reconnectTimeout = setTimeout(initializeMqtt, MQTT_CONFIG.reconnectDelay);
 }
 
-/**
- * Generate simulated device data for testing
- */
-function generateSimulatedData() {
-    // Simulate various devices
-    updateTable('RVC/status/dimmer1/state', {
-        deviceType: 'dimmer',
-        name: 'Main Cabin Light',
-        state: 'on',
-        brightness: Math.floor(Math.random() * 30) + 70 // 70-100%
-    });
+// --- Simulation Functions --- //
+
+function simulateInitialDevices() {
+    console.log("SIMULATION: Simulating initial device discovery.");
+    // Simulate a dimmer
+    const dimmerTopic1 = 'RVC/DC_DIMMER_COMMAND_2_0';
+    const dimmerPayload1 = JSON.stringify({ "operating status (brightness)": 75 });
+    handleMqttMessage(dimmerTopic1, dimmerPayload1);
     
-    updateTable('RVC/status/thermo1/state', {
-        deviceType: 'thermostat',
-        name: 'Climate Control',
-        state: 'on',
-        temperature: Math.floor(Math.random() * 6) + 68, // 68-74 F
-        mode: 'heat'
-    });
-    
-    updateTable('RVC/status/vent1/state', {
-        deviceType: 'vent',
-        name: 'Bathroom Vent',
-        state: 'open',
-        position: Math.floor(Math.random() * 40) + 30 // 30-70%
-    });
-    
-    console.log('Updated simulated device data');
+    // Simulate another dimmer
+    const dimmerTopic2 = 'RVC/DC_DIMMER_COMMAND_2_1';
+    const dimmerPayload2 = JSON.stringify({ "operating status (brightness)": 30 });
+    handleMqttMessage(dimmerTopic2, dimmerPayload2);
+
+    console.log("SIMULATION: Initial device simulation complete.");
 }
+
+// Wait for the DOM to be fully loaded before initializing MQTT
+document.addEventListener('DOMContentLoaded', initializeMqtt);
 
 // Handle command button clicks
 function handleCommandButton(event) {
