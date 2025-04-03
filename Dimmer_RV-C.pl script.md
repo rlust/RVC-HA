@@ -63,5 +63,6 @@ Usage:
         34: unlock
         49: flash
         50: flash momentarily
+    - Stop: Stop the current ramp operation.
 In summary, the text describes how to use the dimmer_RV-C.pl script to send various commands (like on, off, set brightness, ramp, flash) to specific RV-C dimmer loads using their numeric IDs and corresponding command codes.
 s

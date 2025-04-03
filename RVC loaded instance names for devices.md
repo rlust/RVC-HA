@@ -3,7 +3,9 @@ RVC loaded instance names for devices
 
 Okay, I have processed the text from the images you provided. It appears to be a list mapping numerical IDs to RV device names or functions, likely corresponding to the <load-id> mentioned in the script documentation earlier.
 Here is the combined data extracted from the images:
+
 Outputs / Devices:
+
 * 13: Satellite Dome
 * 14: Entry Door
 * 15: Gen Stop
@@ -34,25 +36,25 @@ Outputs / Devices:
 * 40: Livrm Accent B
 * 41: Sofa Ceiling
 * 42: Kitchen Ceiling
-    * (ID 43 Missing)*
+
 * 44: D/S Slide
 * 45: Dinette
 * 46: Sink
 * 47: Midship
-    * (ID 48 Missing)*
+
 * 49: Door Awning Extend
 * 50: Door Awning Retract
 * 51: Awning D/S
 * 52: Awning P/S
 * 53: Cargo
 * 54: Under Slide
-    * (ID 55 Missing)*
+
 * 56: Bed Reading
 * 57: Security D/S
 * 58: Security P/S
 * 59: Security Motion
 * 60: Porch
-    * (IDs 61-180 Missing)*
+
 * 181: Kitchen Slide Extend
 * 182: Kitchen Slide Retract
 * 183: Super Slide Extend
