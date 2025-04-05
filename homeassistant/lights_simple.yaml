@@ -1,5 +1,9 @@
 # RVC Lights with simplified command format
 # This configuration uses the simplified space-separated format: "instance command brightness"
+# Commands:
+# - On: command = 2
+# - Off: command = 3
+# - Ramp/Dim: command = 19
 
 # Bedroom Area Lights
 - platform: mqtt
@@ -13,11 +17,11 @@
   state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
   brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
   command_template: >-
-    {"command": {% if state == "ON" %}2{% else %}3{% endif %}, 
-     "command definition": {% if state == "ON" %}"on"{% else %}"off"{% endif %}, 
-     "instance": 25, 
-     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}, 
-     "delay/duration": 255}
+    {% if brightness is defined and brightness|int != 100 and state == "ON" %}
+      25 19 {{ brightness }}
+    {% else %}
+      25 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+    {% endif %}
 
 - platform: mqtt
   name: "Bed Ceiling B"
