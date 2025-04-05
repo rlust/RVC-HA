@@ -1,0 +1,12 @@
+# Customizations for Home Assistant entities
+# Used to customize or ignore specific entities
+
+# Ignore specific RVC lights
+light.rvc_light_1:
+  hidden: true
+  disabled_by: user
+
+# Add more specific lights as needed, for example:
+light.rvc_light_181:
+  hidden: true
+  disabled_by: user

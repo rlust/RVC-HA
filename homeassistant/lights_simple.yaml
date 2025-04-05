@@ -1,0 +1,141 @@
+# RVC Lights with simplified command format
+# This configuration uses the simplified space-separated format: "instance command brightness"
+
+# Bedroom Area Lights
+- platform: mqtt
+  name: "Bed Ceiling A"
+  unique_id: rvc_bed_ceiling_a
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/25"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}2{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"on"{% else %}"off"{% endif %}, 
+     "instance": 25, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}, 
+     "delay/duration": 255}
+
+- platform: mqtt
+  name: "Bed Ceiling B"
+  unique_id: rvc_bed_ceiling_b
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/26"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    26 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+- platform: mqtt
+  name: "Bed Accent"
+  unique_id: rvc_bed_accent
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/27"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    27 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+# Bathroom Area Lights
+- platform: mqtt
+  name: "RR Bath Ceiling"
+  unique_id: rvc_rr_bath_ceiling
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/30"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    30 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+- platform: mqtt
+  name: "RR Bath Lav"
+  unique_id: rvc_rr_bath_lav
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/31"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    31 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+# Kitchen Area Lights
+- platform: mqtt
+  name: "Kitchen Ceiling A"
+  unique_id: rvc_kitchen_ceiling_a
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/33"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    33 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+- platform: mqtt
+  name: "Kitchen Counter"
+  unique_id: rvc_kitchen_counter
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/35"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    35 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+# Living Area Lights
+- platform: mqtt
+  name: "Main Ceiling A"
+  unique_id: rvc_main_ceiling_a
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/37"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    37 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+- platform: mqtt
+  name: "Main Ceiling B"
+  unique_id: rvc_main_ceiling_b
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/38"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    38 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}
+
+# Sink Light (Instance 46)
+- platform: mqtt
+  name: "Sink Light"
+  unique_id: rvc_sink_light
+  command_topic: "node-red/rvc/commands"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/46"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    46 {% if state == "ON" %}2{% else %}3{% endif %} {% if brightness is defined %}{{ brightness }}{% else %}100{% endif %}

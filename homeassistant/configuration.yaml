@@ -1,0 +1,48 @@
+homeassistant:
+  name: RVC Home Assistant
+  unit_system: imperial
+  time_zone: America/New_York
+  customize: !include customizations.yaml
+
+# Enable the MQTT integration without any configuration
+# This will use the UI to configure MQTT
+mqtt:
+
+# Include the lights configuration
+# Using simplified command format (instance command brightness)
+light: !include lights_simple.yaml
+# Alternative configurations:
+# light: !include lights.yaml           # Original JSON format
+# light: !include lights_direct.yaml    # Direct MQTT format (no Node-RED required)
+sensor: !include mqtt_sensors.yaml
+
+# Configure logging
+logger:
+  default: info
+  logs:
+    homeassistant.components.mqtt: debug
+
+# Configure history
+history:
+
+# Configure custom recorder settings
+recorder:
+  purge_keep_days: 30
+
+# Enable RVC Lights component with auto-discovery disabled
+rvc_lights:
+  enable_auto_discovery: false
+
+# RVC Lights customizations are included in the homeassistant section at the top
+
+# Enable the frontend
+frontend:
+
+# Enable configuration UI
+config:
+
+# Default dependencies
+http:
+
+# Enable automation
+automation:
