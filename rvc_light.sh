@@ -5,12 +5,16 @@
 # Usage information
 function show_usage {
   echo "RVC Light Control"
-  echo "Usage: $0 [instance] [on|off|dim] [brightness]"
+  echo "Usage: $0 [instance] [on|off|toggle|bright|dim|stop] [brightness]"
   echo
   echo "Examples:"
-  echo "  $0 46 on      # Turn light 46 on at 100% brightness"
-  echo "  $0 46 off     # Turn light 46 off"
-  echo "  $0 46 dim 50  # Set light 46 to 50% brightness"
+  echo "  $0 46 on       # Turn light 46 on at 100% brightness"
+  echo "  $0 46 off      # Turn light 46 off"
+  echo "  $0 46 toggle   # Toggle light 46 between on and off"
+  echo "  $0 46 bright   # Ramp up brightness of light 46"
+  echo "  $0 46 dim 50   # Set light 46 to 50% brightness"
+  echo "  $0 46 dim      # Ramp down brightness of light 46"
+  echo "  $0 46 stop     # Stop any active ramping"
 }
 
 # Check arguments
@@ -32,13 +36,22 @@ case "$ACTION" in
     CMD="3"
     BRIGHTNESS="0"
     ;;
-  dim)
+  toggle)
+    CMD="5"
+    BRIGHTNESS="100"
+    ;;
+  bright)
     CMD="19"  # ramp up
+    ;;
+  dim)
     if [ -z "$3" ]; then
-      echo "Error: Brightness required for dim command"
-      show_usage
-      exit 1
+      CMD="20"  # ramp down without specific brightness
+    else
+      CMD="19"  # ramp up/dim to specific brightness
     fi
+    ;;
+  stop)
+    CMD="0"  # no command (stops ramping)
     ;;
   *)
     echo "Error: Unknown action '$ACTION'"

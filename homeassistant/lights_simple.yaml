@@ -3,7 +3,10 @@
 # Commands:
 # - On: command = 2
 # - Off: command = 3
-# - Ramp/Dim: command = 19
+# - Toggle: command = 5
+# - Ramp Up: command = 19 (with brightness)
+# - Ramp Down: command = 20
+# - Stop Ramp: command = 0
 
 # Bedroom Area Lights
 - platform: mqtt
