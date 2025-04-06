@@ -1,0 +1,92 @@
+# RVC Light Control Shell Commands
+# These commands use the enhanced rvc_light.sh script to control lights
+
+# Bed Ceiling A (Instance 25)
+bed_ceiling_a_on: /Users/randylust/RVC-HA/rvc_light.sh 25 on
+bed_ceiling_a_off: /Users/randylust/RVC-HA/rvc_light.sh 25 off
+bed_ceiling_a_toggle: /Users/randylust/RVC-HA/rvc_light.sh 25 toggle
+bed_ceiling_a_bright: /Users/randylust/RVC-HA/rvc_light.sh 25 bright
+bed_ceiling_a_dim: /Users/randylust/RVC-HA/rvc_light.sh 25 dim
+bed_ceiling_a_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 25 dim 50
+bed_ceiling_a_stop: /Users/randylust/RVC-HA/rvc_light.sh 25 stop
+
+# Bed Ceiling B (Instance 26)
+bed_ceiling_b_on: /Users/randylust/RVC-HA/rvc_light.sh 26 on
+bed_ceiling_b_off: /Users/randylust/RVC-HA/rvc_light.sh 26 off
+bed_ceiling_b_toggle: /Users/randylust/RVC-HA/rvc_light.sh 26 toggle
+bed_ceiling_b_bright: /Users/randylust/RVC-HA/rvc_light.sh 26 bright
+bed_ceiling_b_dim: /Users/randylust/RVC-HA/rvc_light.sh 26 dim
+bed_ceiling_b_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 26 dim 50
+bed_ceiling_b_stop: /Users/randylust/RVC-HA/rvc_light.sh 26 stop
+
+# Bed Accent (Instance 27)
+bed_accent_on: /Users/randylust/RVC-HA/rvc_light.sh 27 on
+bed_accent_off: /Users/randylust/RVC-HA/rvc_light.sh 27 off
+bed_accent_toggle: /Users/randylust/RVC-HA/rvc_light.sh 27 toggle
+bed_accent_bright: /Users/randylust/RVC-HA/rvc_light.sh 27 bright
+bed_accent_dim: /Users/randylust/RVC-HA/rvc_light.sh 27 dim
+bed_accent_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 27 dim 50
+bed_accent_stop: /Users/randylust/RVC-HA/rvc_light.sh 27 stop
+
+# RR Bath Ceiling (Instance 30)
+rr_bath_ceiling_on: /Users/randylust/RVC-HA/rvc_light.sh 30 on
+rr_bath_ceiling_off: /Users/randylust/RVC-HA/rvc_light.sh 30 off
+rr_bath_ceiling_toggle: /Users/randylust/RVC-HA/rvc_light.sh 30 toggle
+rr_bath_ceiling_bright: /Users/randylust/RVC-HA/rvc_light.sh 30 bright
+rr_bath_ceiling_dim: /Users/randylust/RVC-HA/rvc_light.sh 30 dim
+rr_bath_ceiling_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 30 dim 50
+rr_bath_ceiling_stop: /Users/randylust/RVC-HA/rvc_light.sh 30 stop
+
+# RR Bath Lav (Instance 31)
+rr_bath_lav_on: /Users/randylust/RVC-HA/rvc_light.sh 31 on
+rr_bath_lav_off: /Users/randylust/RVC-HA/rvc_light.sh 31 off
+rr_bath_lav_toggle: /Users/randylust/RVC-HA/rvc_light.sh 31 toggle
+rr_bath_lav_bright: /Users/randylust/RVC-HA/rvc_light.sh 31 bright
+rr_bath_lav_dim: /Users/randylust/RVC-HA/rvc_light.sh 31 dim
+rr_bath_lav_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 31 dim 50
+rr_bath_lav_stop: /Users/randylust/RVC-HA/rvc_light.sh 31 stop
+
+# Kitchen Ceiling A (Instance 33)
+kitchen_ceiling_a_on: /Users/randylust/RVC-HA/rvc_light.sh 33 on
+kitchen_ceiling_a_off: /Users/randylust/RVC-HA/rvc_light.sh 33 off
+kitchen_ceiling_a_toggle: /Users/randylust/RVC-HA/rvc_light.sh 33 toggle
+kitchen_ceiling_a_bright: /Users/randylust/RVC-HA/rvc_light.sh 33 bright
+kitchen_ceiling_a_dim: /Users/randylust/RVC-HA/rvc_light.sh 33 dim
+kitchen_ceiling_a_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 33 dim 50
+kitchen_ceiling_a_stop: /Users/randylust/RVC-HA/rvc_light.sh 33 stop
+
+# Kitchen Counter (Instance 35)
+kitchen_counter_on: /Users/randylust/RVC-HA/rvc_light.sh 35 on
+kitchen_counter_off: /Users/randylust/RVC-HA/rvc_light.sh 35 off
+kitchen_counter_toggle: /Users/randylust/RVC-HA/rvc_light.sh 35 toggle
+kitchen_counter_bright: /Users/randylust/RVC-HA/rvc_light.sh 35 bright
+kitchen_counter_dim: /Users/randylust/RVC-HA/rvc_light.sh 35 dim
+kitchen_counter_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 35 dim 50
+kitchen_counter_stop: /Users/randylust/RVC-HA/rvc_light.sh 35 stop
+
+# Main Ceiling A (Instance 37)
+main_ceiling_a_on: /Users/randylust/RVC-HA/rvc_light.sh 37 on
+main_ceiling_a_off: /Users/randylust/RVC-HA/rvc_light.sh 37 off
+main_ceiling_a_toggle: /Users/randylust/RVC-HA/rvc_light.sh 37 toggle
+main_ceiling_a_bright: /Users/randylust/RVC-HA/rvc_light.sh 37 bright
+main_ceiling_a_dim: /Users/randylust/RVC-HA/rvc_light.sh 37 dim
+main_ceiling_a_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 37 dim 50
+main_ceiling_a_stop: /Users/randylust/RVC-HA/rvc_light.sh 37 stop
+
+# Main Ceiling B (Instance 38)
+main_ceiling_b_on: /Users/randylust/RVC-HA/rvc_light.sh 38 on
+main_ceiling_b_off: /Users/randylust/RVC-HA/rvc_light.sh 38 off
+main_ceiling_b_toggle: /Users/randylust/RVC-HA/rvc_light.sh 38 toggle
+main_ceiling_b_bright: /Users/randylust/RVC-HA/rvc_light.sh 38 bright
+main_ceiling_b_dim: /Users/randylust/RVC-HA/rvc_light.sh 38 dim
+main_ceiling_b_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 38 dim 50
+main_ceiling_b_stop: /Users/randylust/RVC-HA/rvc_light.sh 38 stop
+
+# Sink Light (Instance 46)
+sink_light_on: /Users/randylust/RVC-HA/rvc_light.sh 46 on
+sink_light_off: /Users/randylust/RVC-HA/rvc_light.sh 46 off
+sink_light_toggle: /Users/randylust/RVC-HA/rvc_light.sh 46 toggle
+sink_light_bright: /Users/randylust/RVC-HA/rvc_light.sh 46 bright
+sink_light_dim: /Users/randylust/RVC-HA/rvc_light.sh 46 dim
+sink_light_dim_50: /Users/randylust/RVC-HA/rvc_light.sh 46 dim 50
+sink_light_stop: /Users/randylust/RVC-HA/rvc_light.sh 46 stop

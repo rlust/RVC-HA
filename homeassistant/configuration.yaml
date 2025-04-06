@@ -46,3 +46,6 @@ http:
 
 # Enable automation
 automation:
+
+# Enable shell commands for direct control of RVC lights
+shell_command: !include shell_commands.yaml
