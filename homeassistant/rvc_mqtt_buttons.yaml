@@ -1,0 +1,191 @@
+title: RVC Lights MQTT Control
+views:
+  - title: Lights
+    path: lights
+    badges: []
+    cards:
+      - type: entities
+        title: Sink Light (Instance 46)
+        show_header_toggle: false
+        entities:
+          - entity: light.sink_light
+            secondary_info: last-changed
+          - type: buttons
+            entities:
+              - name: On
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 2 100"
+                icon: mdi:lightbulb-on
+                show_icon: true
+              - name: Off
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 3 0"
+                icon: mdi:lightbulb-off
+                show_icon: true
+              - name: Toggle
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 5 100"
+                icon: mdi:lightbulb-outline
+                show_icon: true
+          - type: buttons
+            entities:
+              - name: Brighter
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 19 100"
+                icon: mdi:brightness-7
+                show_icon: true
+              - name: Dimmer
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 20 100"
+                icon: mdi:brightness-5
+                show_icon: true
+              - name: 50%
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 19 50"
+                icon: mdi:brightness-6
+                show_icon: true
+              - name: Stop
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "46 0 0"
+                icon: mdi:stop
+                show_icon: true
+ 
+      - type: entities
+        title: Bed Ceiling A (Instance 25)
+        show_header_toggle: false
+        entities:
+          - entity: light.bed_ceiling_a
+            secondary_info: last-changed
+          - type: buttons
+            entities:
+              - name: On
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "25 2 100"
+                icon: mdi:lightbulb-on
+                show_icon: true
+              - name: Off
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "25 3 0"
+                icon: mdi:lightbulb-off
+                show_icon: true
+              - name: Toggle
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "25 5 100"
+                icon: mdi:lightbulb-outline
+                show_icon: true
+          - type: buttons
+            entities:
+              - name: Brighter
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "25 19 100"
+                icon: mdi:brightness-7
+                show_icon: true
+              - name: Dimmer
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "25 20 100"
+                icon: mdi:brightness-5
+                show_icon: true
+              - name: 50%
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "25 19 50"
+                icon: mdi:brightness-6
+                show_icon: true
+
+      - type: entities
+        title: Kitchen Counter (Instance 35)
+        show_header_toggle: false
+        entities:
+          - entity: light.kitchen_counter
+            secondary_info: last-changed
+          - type: buttons
+            entities:
+              - name: On
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "35 2 100"
+                icon: mdi:lightbulb-on
+                show_icon: true
+              - name: Off
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "35 3 0"
+                icon: mdi:lightbulb-off
+                show_icon: true
+              - name: Toggle
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "35 5 100"
+                icon: mdi:lightbulb-outline
+                show_icon: true
+          - type: buttons
+            entities:
+              - name: 50%
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: node-red/rvc/commands
+                    payload: "35 19 50"
+                icon: mdi:brightness-6
+                show_icon: true
