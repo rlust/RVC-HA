@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import CONF_DEVICES, Platform
 
-from .const import DOMAIN
+from .const import DOMAIN, CONF_ENABLE_AUTO_DISCOVERY
 from .discovery import async_start_discovery
 from .services import async_setup_services
 
@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema(
     {DOMAIN: vol.Schema({
-        vol.Optional('enable_auto_discovery', default=True): cv.boolean,
+        vol.Optional(CONF_ENABLE_AUTO_DISCOVERY, default=True): cv.boolean,
     })}, 
     extra=vol.ALLOW_EXTRA
 )
@@ -30,7 +30,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     # Extract configuration
     if DOMAIN in config:
         conf = config[DOMAIN]
-        enable_auto_discovery = conf.get('enable_auto_discovery', True)
+        enable_auto_discovery = conf.get(CONF_ENABLE_AUTO_DISCOVERY, True)
     else:
         enable_auto_discovery = True
     
@@ -41,11 +41,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
     
     _LOGGER.info(f"Setting up RVC Lights component with auto-discovery: {enable_auto_discovery}")
     
-    # Load the light platform
-    hass.async_create_task(
-        hass.helpers.discovery.async_load_platform(
-            "light", DOMAIN, {}, config
-        )
+    # Load the light platform using the recommended approach
+    await hass.async_add_executor_job(
+        hass.helpers.discovery.load_platform,
+        "light", DOMAIN, {}, config
     )
     
     # Start discovery if enabled

@@ -21,6 +21,7 @@ logger:
   default: info
   logs:
     homeassistant.components.mqtt: debug
+    custom_components.rvc_lights: debug
 
 # Configure history
 history:
@@ -31,7 +32,7 @@ recorder:
 
 # Enable RVC Lights component with auto-discovery disabled
 rvc_lights:
-  enable_auto_discovery: false
+  enable_auto_discovery: true
 
 # RVC Lights customizations are included in the homeassistant section at the top
 
@@ -48,4 +49,5 @@ http:
 automation:
 
 # Enable shell commands for direct control of RVC lights
-shell_command: !include shell_commands.yaml
+# Disabled in favor of the rvc_lights custom component
+# shell_command: !include shell_commands.yaml

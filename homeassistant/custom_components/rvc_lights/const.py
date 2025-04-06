@@ -29,6 +29,7 @@ DEFAULT_DELAY_DURATION = 255
 DEFAULT_NAME = "RVC Light"
 
 # Light state and brightness keys in MQTT status messages
+# These must exactly match the field names in the MQTT payload
 STATE_KEY = "operating status (brightness)"
 LOAD_STATUS_KEY = "load status"
 

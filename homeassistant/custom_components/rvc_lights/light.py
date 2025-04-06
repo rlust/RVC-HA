@@ -31,12 +31,19 @@ from .const import (
     DOMAIN,
     RVC_COMMAND_TOPIC_PREFIX,
     RVC_STATUS_TOPIC_PREFIX,
+    RVC_DIRECT_COMMAND_TOPIC,
+    RVC_CMD_ON,
     RVC_CMD_OFF,
+    RVC_CMD_TOGGLE,
     RVC_CMD_RAMP_UP,
+    RVC_CMD_RAMP_DOWN,
+    RVC_CMD_STOP,
     DEFAULT_BRIGHTNESS,
     DEFAULT_DELAY_DURATION,
     STATE_KEY,
     LOAD_STATUS_KEY,
+    RVC_LIGHTS,
+    CONF_ENABLE_AUTO_DISCOVERY,
 )
 
 from .discovery import DISCOVERY_SIGNAL
@@ -224,22 +231,50 @@ class RvcLight(LightEntity):
         def message_received(msg):
             """Handle new MQTT messages."""
             try:
+                # Log the raw message for debugging
+                _LOGGER.debug(f"Received message on {msg.topic}: {msg.payload}")
+                
+                # Parse the payload
                 payload = json.loads(msg.payload)
                 
-                # Get brightness from operating status
+                # Log the parsed payload
+                _LOGGER.debug(f"Parsed payload for {self._attr_name}: {payload}")
+                
+                # Get brightness from operating status (brightness)
                 if STATE_KEY in payload:
-                    brightness = int(payload[STATE_KEY])
-                    self._brightness = min(max(brightness, 0), 100)
-                    self._state = self._brightness > 0
-                # Alternative: use load status if operating status not available
-                elif LOAD_STATUS_KEY in payload:
-                    self._state = payload[LOAD_STATUS_KEY] == "01"
+                    # Parse brightness value, ensuring it's an integer
+                    try:
+                        brightness = int(payload[STATE_KEY])
+                        self._brightness = min(max(brightness, 0), 100)
+                        self._state = self._brightness > 0
+                        _LOGGER.debug(f"Updated {self._attr_name} brightness to {self._brightness}, state: {self._state}")
+                    except (ValueError, TypeError):
+                        _LOGGER.warning(f"Invalid brightness value in payload: {payload[STATE_KEY]}")
+                
+                # Check load status
+                if LOAD_STATUS_KEY in payload:
+                    load_status = payload[LOAD_STATUS_KEY]
+                    # Check if active/inactive text or binary value
+                    if isinstance(load_status, str):
+                        if load_status.lower() in ("active", "on", "01", "1", "true"):
+                            self._state = True
+                        elif load_status.lower() in ("inactive", "off", "00", "0", "false"):
+                            self._state = False
+                    _LOGGER.debug(f"Updated {self._attr_name} load status to {load_status}, state: {self._state}")
+                    
+                    # If just turned on but no brightness, use default
                     if self._state and self._brightness == 0:
                         self._brightness = self._default_brightness
+                        _LOGGER.debug(f"Set default brightness to {self._brightness} for {self._attr_name}")
                 
+                # Update Home Assistant state
                 self.async_write_ha_state()
+                _LOGGER.debug(f"Updated HA state for {self._attr_name}: state={self._state}, brightness={self._brightness}")
+                
+            except json.JSONDecodeError as ex:
+                _LOGGER.error(f"Failed to parse MQTT message as JSON: {msg.payload}. Error: {ex}")
             except Exception as ex:
-                _LOGGER.error("Failed to parse MQTT message: %s", ex)
+                _LOGGER.error(f"Error handling MQTT message for {self._attr_name}: {ex}")
         
         await mqtt.async_subscribe(
             self.hass, self._status_topic, message_received, 1
