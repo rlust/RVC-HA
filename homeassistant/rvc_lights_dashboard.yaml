@@ -1,0 +1,389 @@
+title: RVC Lights Control
+views:
+  - title: Lights
+    path: lights
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: >
+              ## Bedroom Area Lights
+          
+          - type: entities
+            title: Bed Ceiling A (Instance 25)
+            show_header_toggle: false
+            entities:
+              - entity: light.bed_ceiling_a
+                secondary_info: last-changed
+              - type: buttons
+                entities:
+                  - name: On
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_on
+                      target: {}
+                    icon: mdi:lightbulb-on
+                    show_icon: true
+                  - name: Off
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_off
+                      target: {}
+                    icon: mdi:lightbulb-off
+                    show_icon: true
+                  - name: Toggle
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_toggle
+                      target: {}
+                    icon: mdi:lightbulb-outline
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: Brighter
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_bright
+                      target: {}
+                    icon: mdi:brightness-7
+                    show_icon: true
+                  - name: Dimmer
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_dim
+                      target: {}
+                    icon: mdi:brightness-5
+                    show_icon: true
+                  - name: Stop
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_stop
+                      target: {}
+                    icon: mdi:stop
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: 50%
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_a_dim_50
+                      target: {}
+                    icon: mdi:brightness-6
+                    show_icon: true
+
+          - type: entities
+            title: Bed Ceiling B (Instance 26)
+            show_header_toggle: false
+            entities:
+              - entity: light.bed_ceiling_b
+                secondary_info: last-changed
+              - type: buttons
+                entities:
+                  - name: On
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_on
+                      target: {}
+                    icon: mdi:lightbulb-on
+                    show_icon: true
+                  - name: Off
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_off
+                      target: {}
+                    icon: mdi:lightbulb-off
+                    show_icon: true
+                  - name: Toggle
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_toggle
+                      target: {}
+                    icon: mdi:lightbulb-outline
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: Brighter
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_bright
+                      target: {}
+                    icon: mdi:brightness-7
+                    show_icon: true
+                  - name: Dimmer
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_dim
+                      target: {}
+                    icon: mdi:brightness-5
+                    show_icon: true
+                  - name: Stop
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_stop
+                      target: {}
+                    icon: mdi:stop
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: 50%
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_ceiling_b_dim_50
+                      target: {}
+                    icon: mdi:brightness-6
+                    show_icon: true
+
+          - type: entities
+            title: Bed Accent (Instance 27)
+            show_header_toggle: false
+            entities:
+              - entity: light.bed_accent
+                secondary_info: last-changed
+              - type: buttons
+                entities:
+                  - name: On
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_on
+                      target: {}
+                    icon: mdi:lightbulb-on
+                    show_icon: true
+                  - name: Off
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_off
+                      target: {}
+                    icon: mdi:lightbulb-off
+                    show_icon: true
+                  - name: Toggle
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_toggle
+                      target: {}
+                    icon: mdi:lightbulb-outline
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: Brighter
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_bright
+                      target: {}
+                    icon: mdi:brightness-7
+                    show_icon: true
+                  - name: Dimmer
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_dim
+                      target: {}
+                    icon: mdi:brightness-5
+                    show_icon: true
+                  - name: Stop
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_stop
+                      target: {}
+                    icon: mdi:stop
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: 50%
+                    tap_action:
+                      action: call-service
+                      service: shell_command.bed_accent_dim_50
+                      target: {}
+                    icon: mdi:brightness-6
+                    show_icon: true
+
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: >
+              ## Kitchen Area Lights
+
+          - type: entities
+            title: Kitchen Ceiling A (Instance 33)
+            show_header_toggle: false
+            entities:
+              - entity: light.kitchen_ceiling_a
+                secondary_info: last-changed
+              - type: buttons
+                entities:
+                  - name: On
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_on
+                      target: {}
+                    icon: mdi:lightbulb-on
+                    show_icon: true
+                  - name: Off
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_off
+                      target: {}
+                    icon: mdi:lightbulb-off
+                    show_icon: true
+                  - name: Toggle
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_toggle
+                      target: {}
+                    icon: mdi:lightbulb-outline
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: Brighter
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_bright
+                      target: {}
+                    icon: mdi:brightness-7
+                    show_icon: true
+                  - name: Dimmer
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_dim
+                      target: {}
+                    icon: mdi:brightness-5
+                    show_icon: true
+                  - name: Stop
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_stop
+                      target: {}
+                    icon: mdi:stop
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: 50%
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_ceiling_a_dim_50
+                      target: {}
+                    icon: mdi:brightness-6
+                    show_icon: true
+
+          - type: entities
+            title: Kitchen Counter (Instance 35)
+            show_header_toggle: false
+            entities:
+              - entity: light.kitchen_counter
+                secondary_info: last-changed
+              - type: buttons
+                entities:
+                  - name: On
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_on
+                      target: {}
+                    icon: mdi:lightbulb-on
+                    show_icon: true
+                  - name: Off
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_off
+                      target: {}
+                    icon: mdi:lightbulb-off
+                    show_icon: true
+                  - name: Toggle
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_toggle
+                      target: {}
+                    icon: mdi:lightbulb-outline
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: Brighter
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_bright
+                      target: {}
+                    icon: mdi:brightness-7
+                    show_icon: true
+                  - name: Dimmer
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_dim
+                      target: {}
+                    icon: mdi:brightness-5
+                    show_icon: true
+                  - name: Stop
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_stop
+                      target: {}
+                    icon: mdi:stop
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: 50%
+                    tap_action:
+                      action: call-service
+                      service: shell_command.kitchen_counter_dim_50
+                      target: {}
+                    icon: mdi:brightness-6
+                    show_icon: true
+
+          - type: entities
+            title: Sink Light (Instance 46)
+            show_header_toggle: false
+            entities:
+              - entity: light.sink_light
+                secondary_info: last-changed
+              - type: buttons
+                entities:
+                  - name: On
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_on
+                      target: {}
+                    icon: mdi:lightbulb-on
+                    show_icon: true
+                  - name: Off
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_off
+                      target: {}
+                    icon: mdi:lightbulb-off
+                    show_icon: true
+                  - name: Toggle
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_toggle
+                      target: {}
+                    icon: mdi:lightbulb-outline
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: Brighter
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_bright
+                      target: {}
+                    icon: mdi:brightness-7
+                    show_icon: true
+                  - name: Dimmer
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_dim
+                      target: {}
+                    icon: mdi:brightness-5
+                    show_icon: true
+                  - name: Stop
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_stop
+                      target: {}
+                    icon: mdi:stop
+                    show_icon: true
+              - type: buttons
+                entities:
+                  - name: 50%
+                    tap_action:
+                      action: call-service
+                      service: shell_command.sink_light_dim_50
+                      target: {}
+                    icon: mdi:brightness-6
+                    show_icon: true
