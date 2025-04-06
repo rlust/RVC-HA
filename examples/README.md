@@ -44,9 +44,9 @@ The lights support the following commands through Home Assistant:
 
 Each light uses these MQTT topics:
 - Command Topic: `RVC/DC_DIMMER_COMMAND_2/{instance}/set`
-- State Topic: `RVC/DC_DIMMER_STATUS_2/{instance}`
+- State Topic: `RVC/DC_DIMMER_STATUS_3/{instance}`
 - Brightness Command Topic: `RVC/DC_DIMMER_COMMAND_2/{instance}/set`
-- Brightness State Topic: `RVC/DC_DIMMER_STATUS_2/{instance}`
+- Brightness State Topic: `RVC/DC_DIMMER_STATUS_3/{instance}`
 
 ### Troubleshooting
 

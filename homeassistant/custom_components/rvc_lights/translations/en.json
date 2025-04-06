@@ -1,0 +1,95 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "RVC Lights",
+        "description": "Set up RVC Lights integration for controlling RV-C compatible lights.\n\nThe following lights are predefined and will be automatically added:\n{lights}",
+        "data": {
+          "enable_auto_discovery": "Enable auto-discovery of new lights"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "RVC Lights integration is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "RVC Lights Options",
+        "description": "Configure options for the RVC Lights integration.\n\nThe following lights are predefined and always available:\n{lights}",
+        "data": {
+          "enable_auto_discovery": "Enable auto-discovery of new lights"
+        }
+      }
+    }
+  },
+  "services": {
+    "toggle": {
+      "name": "Toggle",
+      "description": "Toggle the specified RVC lights on or off.",
+      "fields": {
+        "entity_id": {
+          "name": "Light",
+          "description": "The light entity to toggle."
+        }
+      }
+    },
+    "ramp_up": {
+      "name": "Ramp Up",
+      "description": "Gradually increase brightness of the specified RVC lights.",
+      "fields": {
+        "entity_id": {
+          "name": "Light",
+          "description": "The light entity to control."
+        },
+        "brightness_level": {
+          "name": "Target Brightness",
+          "description": "Target brightness level (1-100)."
+        }
+      }
+    },
+    "ramp_down": {
+      "name": "Ramp Down",
+      "description": "Gradually decrease brightness of the specified RVC lights.",
+      "fields": {
+        "entity_id": {
+          "name": "Light",
+          "description": "The light entity to control."
+        },
+        "brightness_level": {
+          "name": "Target Brightness",
+          "description": "Target brightness level (1-100)."
+        }
+      }
+    },
+    "stop_ramp": {
+      "name": "Stop Ramp",
+      "description": "Stop any ongoing brightness ramping of the specified RVC lights.",
+      "fields": {
+        "entity_id": {
+          "name": "Light",
+          "description": "The light entity to control."
+        }
+      }
+    },
+    "send_command": {
+      "name": "Send Command",
+      "description": "Send a custom command to the specified RVC lights.",
+      "fields": {
+        "entity_id": {
+          "name": "Light",
+          "description": "The light entity to control."
+        },
+        "command": {
+          "name": "Command",
+          "description": "The numeric command code to send (0-255)."
+        },
+        "brightness_level": {
+          "name": "Brightness Level",
+          "description": "The brightness level to set (0-100)."
+        }
+      }
+    }
+  }
+}

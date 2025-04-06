@@ -1,0 +1,10 @@
+{
+  "domain": "rvc_lights",
+  "name": "RVC Lights",
+  "documentation": "https://github.com/randylust/RVC-HA/tree/main/homeassistant/custom_components/rvc_lights/",
+  "dependencies": ["mqtt"],
+  "codeowners": ["@randylust"],
+  "requirements": [],
+  "iot_class": "local_push",
+  "version": "1.0.0"
+}

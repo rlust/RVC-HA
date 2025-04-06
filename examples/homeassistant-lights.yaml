@@ -7,9 +7,9 @@ light:
     name: "Bed Ceiling A"
     unique_id: rvc_bed_ceiling_a
     command_topic: "RVC/DC_DIMMER_COMMAND_2/25/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/25"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/25"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/25/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/25"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/25"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":25,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
@@ -21,9 +21,9 @@ light:
     name: "Bed Ceiling B"
     unique_id: rvc_bed_ceiling_b
     command_topic: "RVC/DC_DIMMER_COMMAND_2/26/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/26"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/26"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/26/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/26"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/26"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":26,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
@@ -38,9 +38,9 @@ light:
     name: "Rear Bath Ceiling"
     unique_id: rvc_rear_bath_ceiling
     command_topic: "RVC/DC_DIMMER_COMMAND_2/30/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/30"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/30"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/30/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/30"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/30"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":30,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
@@ -55,9 +55,9 @@ light:
     name: "Living Edge"
     unique_id: rvc_living_edge
     command_topic: "RVC/DC_DIMMER_COMMAND_2/36/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/36"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/36"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/36/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/36"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/36"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":36,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
@@ -72,9 +72,9 @@ light:
     name: "Kitchen Ceiling"
     unique_id: rvc_kitchen_ceiling
     command_topic: "RVC/DC_DIMMER_COMMAND_2/42/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/42"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/42"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/42/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/42"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/42"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":42,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
@@ -89,9 +89,9 @@ light:
     name: "Entry Ceiling"
     unique_id: rvc_entry_ceiling
     command_topic: "RVC/DC_DIMMER_COMMAND_2/35/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/35"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/35"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/35/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/35"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/35"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":35,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
@@ -106,9 +106,9 @@ light:
     name: "Porch Light"
     unique_id: rvc_porch
     command_topic: "RVC/DC_DIMMER_COMMAND_2/60/set"
-    state_topic: "RVC/DC_DIMMER_STATUS_2/60"
+    state_topic: "RVC/DC_DIMMER_STATUS_3/60"
     brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/60/set"
-    brightness_state_topic: "RVC/DC_DIMMER_STATUS_2/60"
+    brightness_state_topic: "RVC/DC_DIMMER_STATUS_3/60"
     brightness_scale: 255
     on_command_type: brightness
     payload_on: '{"command":1,"instance":60,"name":"DC_DIMMER_COMMAND_2","dgn":"1FEDB"}'
