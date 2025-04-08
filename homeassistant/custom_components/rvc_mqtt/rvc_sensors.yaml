@@ -1,0 +1,372 @@
+sensor:
+  # Fresh Water Tank Sensors
+  - platform: mqtt
+    unique_id: fresh_water_tank_level_relative
+    name: "Fresh Water Tank Level"
+    state_topic: "RVC/TANK_STATUS/0"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'relative level' in value_json %}
+        {{ value_json['relative level'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water-percent"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - fresh_water_tank
+      name: "RV Fresh Water Tank"
+      manufacturer: "RVC"
+      model: "RVC Tank System"
+
+  # Fresh Water Tank raw data for troubleshooting
+  - platform: mqtt
+    unique_id: fresh_water_tank_raw
+    name: "Fresh Water Tank Raw Data"
+    state_topic: "RVC/TANK_STATUS/0"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - fresh_water_tank
+      name: "RV Fresh Water Tank"
+      manufacturer: "RVC"
+      model: "RVC Tank System"
+      
+  # Black Waste Tank Sensors
+  - platform: mqtt
+    unique_id: black_waste_tank_level_relative
+    name: "Black Waste Tank Level"
+    state_topic: "RVC/TANK_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'relative level' in value_json %}
+        {{ value_json['relative level'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water-percent"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - black_waste_tank
+      name: "RV Black Waste Tank"
+      manufacturer: "RVC"
+      model: "RVC Tank System"
+
+  # Black Waste Tank raw data for troubleshooting
+  - platform: mqtt
+    unique_id: black_waste_tank_raw
+    name: "Black Waste Tank Raw Data"
+    state_topic: "RVC/TANK_STATUS/1"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - black_waste_tank
+      name: "RV Black Waste Tank"
+      manufacturer: "RVC"
+      model: "RVC Tank System"
+      
+  # Gray Waste Tank Sensors
+  - platform: mqtt
+    unique_id: gray_waste_tank_level_relative
+    name: "Gray Waste Tank Level"
+    state_topic: "RVC/TANK_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'relative level' in value_json %}
+        {{ value_json['relative level'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water-percent"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - gray_waste_tank
+      name: "RV Gray Waste Tank"
+      manufacturer: "RVC"
+      model: "RVC Tank System"
+
+  # Gray Waste Tank raw data for troubleshooting
+  - platform: mqtt
+    unique_id: gray_waste_tank_raw
+    name: "Gray Waste Tank Raw Data"
+    state_topic: "RVC/TANK_STATUS/2"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - gray_waste_tank
+      name: "RV Gray Waste Tank"
+      manufacturer: "RVC"
+      model: "RVC Tank System"
+      
+  # Air Conditioner Status Sensors
+  - platform: mqtt
+    unique_id: ac_front_operating_mode
+    name: "AC Front Operating Mode"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating mode definition' in value_json %}
+        {{ value_json['operating mode definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:air-conditioner"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_front
+      name: "RV AC Front"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  - platform: mqtt
+    unique_id: ac_front_fan_speed
+    name: "AC Front Fan Speed"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'fan speed' in value_json %}
+        {{ value_json['fan speed'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:fan"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_front
+      name: "RV AC Front"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  - platform: mqtt
+    unique_id: ac_front_output_level
+    name: "AC Front Output Level"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'air conditioning output level' in value_json %}
+        {{ value_json['air conditioning output level'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:snowflake-thermometer"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_front
+      name: "RV AC Front"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  # Raw data sensor for troubleshooting
+  - platform: mqtt
+    unique_id: ac_front_raw_data
+    name: "AC Front Raw Data"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/1"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_front
+      name: "RV AC Front"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+
+  # AC Mid Sensors
+  - platform: mqtt
+    unique_id: ac_mid_operating_mode
+    name: "AC Mid Operating Mode"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating mode definition' in value_json %}
+        {{ value_json['operating mode definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:air-conditioner"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_mid
+      name: "RV AC Mid"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  - platform: mqtt
+    unique_id: ac_mid_fan_speed
+    name: "AC Mid Fan Speed"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'fan speed' in value_json %}
+        {{ value_json['fan speed'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:fan"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_mid
+      name: "RV AC Mid"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  - platform: mqtt
+    unique_id: ac_mid_output_level
+    name: "AC Mid Output Level"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'air conditioning output level' in value_json %}
+        {{ value_json['air conditioning output level'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:snowflake-thermometer"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_mid
+      name: "RV AC Mid"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  # Raw data sensor for troubleshooting
+  - platform: mqtt
+    unique_id: ac_mid_raw_data
+    name: "AC Mid Raw Data"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/2"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_mid
+      name: "RV AC Mid"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  # AC Rear Sensors
+  - platform: mqtt
+    unique_id: ac_rear_operating_mode
+    name: "AC Rear Operating Mode"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/3"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating mode definition' in value_json %}
+        {{ value_json['operating mode definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:air-conditioner"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_rear
+      name: "RV AC Rear"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  - platform: mqtt
+    unique_id: ac_rear_fan_speed
+    name: "AC Rear Fan Speed"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/3"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'fan speed' in value_json %}
+        {{ value_json['fan speed'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:fan"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_rear
+      name: "RV AC Rear"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  - platform: mqtt
+    unique_id: ac_rear_output_level
+    name: "AC Rear Output Level"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/3"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'air conditioning output level' in value_json %}
+        {{ value_json['air conditioning output level'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:snowflake-thermometer"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_rear
+      name: "RV AC Rear"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
+      
+  # Raw data sensor for troubleshooting
+  - platform: mqtt
+    unique_id: ac_rear_raw_data
+    name: "AC Rear Raw Data"
+    state_topic: "RVC/AIR_CONDITIONER_STATUS/3"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_air_conditioner_rear
+      name: "RV AC Rear"
+      manufacturer: "RVC"
+      model: "RVC A/C System"
