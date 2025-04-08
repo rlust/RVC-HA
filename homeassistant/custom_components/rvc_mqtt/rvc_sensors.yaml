@@ -370,3 +370,86 @@ sensor:
       name: "RV AC Rear"
       manufacturer: "RVC"
       model: "RVC A/C System"
+      
+  # Water Heater Status Sensors
+  - platform: mqtt
+    unique_id: water_heater_operating_mode
+    name: "Water Heater Operating Mode"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating mode' in value_json %}
+        {{ value_json['operating mode'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:water-boiler"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
+      
+  - platform: mqtt
+    unique_id: water_heater_temperature
+    name: "Water Heater Temperature"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'temperature' in value_json %}
+        {{ value_json['temperature'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
+      
+  - platform: mqtt
+    unique_id: water_heater_status
+    name: "Water Heater Status"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'status' in value_json %}
+        {{ value_json['status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:information-outline"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
+      
+  # Raw data sensor for troubleshooting
+  - platform: mqtt
+    unique_id: water_heater_raw_data
+    name: "Water Heater Raw Data"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: "{{ value_json }}"
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
