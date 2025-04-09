@@ -1,0 +1,421 @@
+sensor:
+  # Thermostat 1 Ambient Sensors
+  - platform: mqtt
+    unique_id: thermostat_1_ambient_temp_c
+    name: "Thermostat 1 Ambient Temperature"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp' in value_json %}
+        {{ value_json['ambient temp'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_1
+      name: "RV Thermostat 1"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_1_ambient_temp_f
+    name: "Thermostat 1 Ambient Temperature (F)"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp F' in value_json %}
+        {{ value_json['ambient temp F'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_1
+      name: "RV Thermostat 1"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Thermostat 2 Ambient Sensors
+  - platform: mqtt
+    unique_id: thermostat_2_ambient_temp_c
+    name: "Thermostat 2 Ambient Temperature"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp' in value_json %}
+        {{ value_json['ambient temp'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_2
+      name: "RV Thermostat 2"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_2_ambient_temp_f
+    name: "Thermostat 2 Ambient Temperature (F)"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp F' in value_json %}
+        {{ value_json['ambient temp F'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_2
+      name: "RV Thermostat 2"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Thermostat 3 Ambient Sensors
+  - platform: mqtt
+    unique_id: thermostat_3_ambient_temp_c
+    name: "Thermostat 3 Ambient Temperature"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/3"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp' in value_json %}
+        {{ value_json['ambient temp'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_3
+      name: "RV Thermostat 3"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_3_ambient_temp_f
+    name: "Thermostat 3 Ambient Temperature (F)"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/3"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp F' in value_json %}
+        {{ value_json['ambient temp F'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_3
+      name: "RV Thermostat 3"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Thermostat 4 Ambient Sensors
+  - platform: mqtt
+    unique_id: thermostat_4_ambient_temp_c
+    name: "Thermostat 4 Ambient Temperature"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/4"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp' in value_json %}
+        {{ value_json['ambient temp'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_4
+      name: "RV Thermostat 4"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_4_ambient_temp_f
+    name: "Thermostat 4 Ambient Temperature (F)"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/4"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp F' in value_json %}
+        {{ value_json['ambient temp F'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_4
+      name: "RV Thermostat 4"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Thermostat 5 Ambient Sensors
+  - platform: mqtt
+    unique_id: thermostat_5_ambient_temp_c
+    name: "Thermostat 5 Ambient Temperature"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/5"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp' in value_json %}
+        {{ value_json['ambient temp'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_5
+      name: "RV Thermostat 5"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_5_ambient_temp_f
+    name: "Thermostat 5 Ambient Temperature (F)"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/5"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp F' in value_json %}
+        {{ value_json['ambient temp F'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_5
+      name: "RV Thermostat 5"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Thermostat 19 Ambient Sensors
+  - platform: mqtt
+    unique_id: thermostat_19_ambient_temp_c
+    name: "Thermostat 19 Ambient Temperature"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/19"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp' in value_json %}
+        {{ value_json['ambient temp'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_19
+      name: "RV Thermostat 19"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_19_ambient_temp_f
+    name: "Thermostat 19 Ambient Temperature (F)"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/19"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ambient temp F' in value_json %}
+        {{ value_json['ambient temp F'] }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_19
+      name: "RV Thermostat 19"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Raw data sensors for troubleshooting
+  - platform: mqtt
+    unique_id: thermostat_1_ambient_raw_data
+    name: "Thermostat 1 Ambient Raw Data"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/1"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp: {{ value_json['ambient temp'] }}°C ({{ value_json['ambient temp F'] }}°F)
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_1
+      name: "RV Thermostat 1"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_2_ambient_raw_data
+    name: "Thermostat 2 Ambient Raw Data"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/2"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp: {{ value_json['ambient temp'] }}°C ({{ value_json['ambient temp F'] }}°F)
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_2
+      name: "RV Thermostat 2"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_3_ambient_raw_data
+    name: "Thermostat 3 Ambient Raw Data"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/3"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp: {{ value_json['ambient temp'] }}°C ({{ value_json['ambient temp F'] }}°F)
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_3
+      name: "RV Thermostat 3"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_4_ambient_raw_data
+    name: "Thermostat 4 Ambient Raw Data"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/4"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp: {{ value_json['ambient temp'] }}°C ({{ value_json['ambient temp F'] }}°F)
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_4
+      name: "RV Thermostat 4"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_5_ambient_raw_data
+    name: "Thermostat 5 Ambient Raw Data"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/5"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp: {{ value_json['ambient temp'] }}°C ({{ value_json['ambient temp F'] }}°F)
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_5
+      name: "RV Thermostat 5"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+      
+  - platform: mqtt
+    unique_id: thermostat_19_ambient_raw_data
+    name: "Thermostat 19 Ambient Raw Data"
+    state_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/19"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp: {{ value_json['ambient temp'] }}°C ({{ value_json['ambient temp F'] }}°F)
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_thermostat_19
+      name: "RV Thermostat 19"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
