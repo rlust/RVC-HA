@@ -1,4 +1,129 @@
 sensor:
+  # Main House Battery Bank DC Source Status
+  - platform: mqtt
+    unique_id: main_house_battery_dc_voltage
+    name: "Main House Battery Voltage"
+    state_topic: "RVC/DC_SOURCE_STATUS_1/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc voltage' in value_json %}
+        {{ value_json['dc voltage'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "V"
+    state_class: "measurement"
+    icon: "mdi:car-battery"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/DC_SOURCE_STATUS_1/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - main_house_battery_bank
+      name: "Main House Battery Bank"
+      manufacturer: "RVC"
+      model: "DC_SOURCE_STATUS_1"
+
+  # Main House Battery DC Source Raw Data
+  - platform: mqtt
+    unique_id: main_house_battery_dc_source_raw
+    name: "Main House Battery DC Source Raw Data"
+    state_topic: "RVC/DC_SOURCE_STATUS_1/1"
+    value_template: >-
+      {% if value_json is defined %}
+        Voltage: {{ value_json['dc voltage'] }} V | Current: {{ value_json['dc current'] }} A | Priority: {{ value_json['device priority definition'] }} | Instance: {{ value_json['instance definition'] }}
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - main_house_battery_bank
+      name: "Main House Battery Bank"
+      manufacturer: "RVC"
+      model: "DC_SOURCE_STATUS_1"
+
+  # Main House Battery DC Current
+  - platform: mqtt
+    unique_id: main_house_battery_dc_current
+    name: "Main House Battery DC Current"
+    state_topic: "RVC/DC_SOURCE_STATUS_1/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc current' in value_json %}
+        {{ value_json['dc current'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "A"
+    state_class: "measurement"
+    icon: "mdi:current-dc"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/DC_SOURCE_STATUS_1/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - main_house_battery_bank
+      name: "Main House Battery Bank"
+      manufacturer: "RVC"
+      model: "DC_SOURCE_STATUS_1"
+
+  # Main House Battery DC Source Status 2
+  - platform: mqtt
+    unique_id: main_house_battery_dc_source2_temp
+    name: "Main House Battery Source Temperature"
+    state_topic: "RVC/DC_SOURCE_STATUS_2/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'source temperature F' in value_json %}
+        {{ value_json['source temperature F'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "°F"
+    state_class: "measurement"
+    icon: "mdi:thermometer"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/DC_SOURCE_STATUS_2/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - main_house_battery_bank
+      name: "Main House Battery Bank"
+      manufacturer: "RVC"
+      model: "DC_SOURCE_STATUS_2"
+
+  # Main House Battery DC Source 2 Raw Data
+  - platform: mqtt
+    unique_id: main_house_battery_dc_source2_raw
+    name: "Main House Battery DC Source 2 Raw Data"
+    state_topic: "RVC/DC_SOURCE_STATUS_2/1"
+    value_template: >-
+      {% if value_json is defined %}
+        Temp F: {{ value_json['source temperature F'] }} °F | Priority: {{ value_json['device priority definition'] }} | Instance: {{ value_json['instance definition'] }} | SOC: {{ value_json['state of charge'] }} | Time Remain: {{ value_json['time remaining'] }}
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - main_house_battery_bank
+      name: "Main House Battery Bank"
+      manufacturer: "RVC"
+      model: "DC_SOURCE_STATUS_2"
+
   # Fresh Water Tank Sensors
   - platform: mqtt
     unique_id: fresh_water_tank_level_relative
@@ -23,12 +148,17 @@ sensor:
       manufacturer: "RVC"
       model: "RVC Tank System"
 
-  # Fresh Water Tank raw data for troubleshooting
+  # Fresh Water Tank raw data for troubleshooting - summary version
   - platform: mqtt
     unique_id: fresh_water_tank_raw
     name: "Fresh Water Tank Raw Data"
     state_topic: "RVC/TANK_STATUS/0"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Level: {{ value_json['relative level'] }}% | Instance: {{ value_json['instance'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
     qos: 0
     expire_after: 600
@@ -64,12 +194,17 @@ sensor:
       manufacturer: "RVC"
       model: "RVC Tank System"
 
-  # Black Waste Tank raw data for troubleshooting
+  # Black Waste Tank raw data for troubleshooting - summary version
   - platform: mqtt
     unique_id: black_waste_tank_raw
     name: "Black Waste Tank Raw Data"
     state_topic: "RVC/TANK_STATUS/1"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Level: {{ value_json['relative level'] }}% | Instance: {{ value_json['instance'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
     qos: 0
     expire_after: 600
@@ -105,12 +240,17 @@ sensor:
       manufacturer: "RVC"
       model: "RVC Tank System"
 
-  # Gray Waste Tank raw data for troubleshooting
+  # Gray Waste Tank raw data for troubleshooting - summary version
   - platform: mqtt
     unique_id: gray_waste_tank_raw
     name: "Gray Waste Tank Raw Data"
     state_topic: "RVC/TANK_STATUS/2"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Level: {{ value_json['relative level'] }}% | Instance: {{ value_json['instance'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
     qos: 0
     expire_after: 600
@@ -188,12 +328,17 @@ sensor:
       manufacturer: "RVC"
       model: "RVC A/C System"
       
-  # Raw data sensor for troubleshooting
+  # Raw data sensor for troubleshooting - summary version
   - platform: mqtt
     unique_id: ac_front_raw_data
     name: "AC Front Raw Data"
     state_topic: "RVC/AIR_CONDITIONER_STATUS/1"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Mode: {{ value_json['operating mode definition'] }} | Output: {{ value_json['air conditioning output level'] }} | Fan: {{ value_json['fan speed'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
     qos: 0
     expire_after: 600
@@ -271,12 +416,17 @@ sensor:
       manufacturer: "RVC"
       model: "RVC A/C System"
       
-  # Raw data sensor for troubleshooting
+  # Raw data sensor for troubleshooting - summary version
   - platform: mqtt
     unique_id: ac_mid_raw_data
     name: "AC Mid Raw Data"
     state_topic: "RVC/AIR_CONDITIONER_STATUS/2"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Mode: {{ value_json['operating mode definition'] }} | Output: {{ value_json['air conditioning output level'] }} | Fan: {{ value_json['fan speed'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
     qos: 0
     expire_after: 600
@@ -354,12 +504,17 @@ sensor:
       manufacturer: "RVC"
       model: "RVC A/C System"
       
-  # Raw data sensor for troubleshooting
+  # Raw data sensor for troubleshooting - summary version
   - platform: mqtt
     unique_id: ac_rear_raw_data
     name: "AC Rear Raw Data"
     state_topic: "RVC/AIR_CONDITIONER_STATUS/3"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Mode: {{ value_json['operating mode definition'] }} | Output: {{ value_json['air conditioning output level'] }} | Fan: {{ value_json['fan speed'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
     qos: 0
     expire_after: 600
@@ -377,8 +532,8 @@ sensor:
     name: "Water Heater Operating Mode"
     state_topic: "RVC/WATERHEATER_STATUS/1"
     value_template: >-
-      {% if value_json is defined and value_json is mapping and 'operating mode' in value_json %}
-        {{ value_json['operating mode'] }}
+      {% if value_json is defined and value_json is mapping and 'operating modes definition' in value_json %}
+        {{ value_json['operating modes definition'] }}
       {% else %}
         unknown
       {% endif %}
@@ -398,11 +553,12 @@ sensor:
     name: "Water Heater Temperature"
     state_topic: "RVC/WATERHEATER_STATUS/1"
     value_template: >-
-      {% if value_json is defined and value_json is mapping and 'temperature' in value_json %}
-        {{ value_json['temperature'] }}
+      {% if value_json is defined and value_json is mapping and 'water temperature' in value_json %}
+        {{ value_json['water temperature'] }}
       {% else %}
-        unknown
+        0
       {% endif %}
+    unit_of_measurement: "°C"
     icon: "mdi:thermometer"
     device_class: "temperature"
     state_class: "measurement"
@@ -417,16 +573,19 @@ sensor:
       model: "RVC Water Heater System"
       
   - platform: mqtt
-    unique_id: water_heater_status
-    name: "Water Heater Status"
+    unique_id: water_heater_temperature_f
+    name: "Water Heater Temperature (F)"
     state_topic: "RVC/WATERHEATER_STATUS/1"
     value_template: >-
-      {% if value_json is defined and value_json is mapping and 'status' in value_json %}
-        {{ value_json['status'] }}
+      {% if value_json is defined and value_json is mapping and 'water temperature F' in value_json %}
+        {{ value_json['water temperature F'] }}
       {% else %}
-        unknown
+        0
       {% endif %}
-    icon: "mdi:information-outline"
+    unit_of_measurement: "°F"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
     qos: 0
     expire_after: 600
     force_update: true
@@ -437,13 +596,82 @@ sensor:
       manufacturer: "RVC"
       model: "RVC Water Heater System"
       
-  # Raw data sensor for troubleshooting
+  - platform: mqtt
+    unique_id: water_heater_burner_status
+    name: "Water Heater Burner Status"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'burner status definition' in value_json %}
+        {{ value_json['burner status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:fire"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
+      
+  - platform: mqtt
+    unique_id: water_heater_thermostat_status
+    name: "Water Heater Thermostat Status"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'thermostat status definition' in value_json %}
+        {{ value_json['thermostat status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:thermostat"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
+      
+  # Raw data sensor for troubleshooting - summary version
   - platform: mqtt
     unique_id: water_heater_raw_data
     name: "Water Heater Raw Data"
     state_topic: "RVC/WATERHEATER_STATUS/1"
-    value_template: "{{ value_json }}"
+    value_template: >-
+      {% if value_json is defined %}
+        Mode: {{ value_json['operating modes definition'] }} | Temp: {{ value_json['water temperature'] }}°C ({{ value_json['water temperature F'] }}°F) | Burner: {{ value_json['burner status definition'] }} | Thermostat: {{ value_json['thermostat status definition'] }}
+      {% else %}
+        No data
+      {% endif %}
     icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - rv_water_heater
+      name: "RV Water Heater"
+      manufacturer: "RVC"
+      model: "RVC Water Heater System"
+      
+  # Individual payload attributes as separate sensors
+  - platform: mqtt
+    unique_id: water_heater_dc_power_status
+    name: "Water Heater DC Power Status"
+    state_topic: "RVC/WATERHEATER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc power failure status definition' in value_json %}
+        {{ value_json['dc power failure status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:power-plug"
     qos: 0
     expire_after: 600
     force_update: true
