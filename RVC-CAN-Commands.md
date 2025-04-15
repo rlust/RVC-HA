@@ -6,25 +6,50 @@ This document describes how to use the `cansend` utility to send commands to RV-
 
 The `DC_DIMMER_COMMAND_2` DGN (Data Group Number: 0x1FEDB, decimal: 130779) is used to control dimmers and lights in the RV-C system.
 
-### Command Structure
+### Command Payload Structure
 
+The actual payload for DC_DIMMER_COMMAND_2 is 8 bytes, sent as a 16-character hex string after the `#` in `cansend`.
+
+**Example (toggle instance 36):**
 ```
-cansend can0 01FEDB24#CCFFPPBBRRTTFFFF
+cansend can0 01FEDB24#24FFFA05FF00FFFF
 ```
 
-Where:
-- **can0**: The CAN interface to use
-- **01**: Source address (sender ID)
-- **FEDB**: DGN (Data Group Number for DC_DIMMER_COMMAND_2)
-- **24**: Priority (2) and destination address (4)
-- **#**: Separator between CAN ID and data payload
-- **CC**: Command code (see table below)
-- **FF**: Fixed value (0xFF)
-- **PP**: Instance number (instance of light to control, in hex format)
-- **BB**: Brightness level (0-100% in hex, FF for default/not applicable)
-- **RR**: Ramp rate (used with ramp commands, FF for default)
-- **TT**: Transition time (duration for brightness change, FF for default)
-- **FFFF**: Fixed value (0xFFFF)
+**Payload Byte Breakdown:**
+| Byte | Example | Description                                |
+|------|---------|--------------------------------------------|
+| 0    | 24      | Command code (see table below)             |
+| 1    | FF      | Reserved / always FF                       |
+| 2    | FA      | Instance (high byte, see note below)       |
+| 3    | 05      | Instance (low byte, see note below)        |
+| 4    | FF      | Brightness (for set commands, else FF)     |
+| 5    | 00      | Ramp rate or transition (if used, else 00) |
+| 6    | FF      | Reserved / always FF                       |
+| 7    | FF      | Reserved / always FF                       |
+
+**Instance Encoding:**
+- For instance N, use: `FA` (fixed) then the instance number as a single byte (e.g., 05 for 5, 24 for 36, etc.).
+- For instance 36: `FA24`
+- For instance 37: `FA25`
+
+**Brightness Encoding:**
+- For set brightness, use 0x00 (0%), 0x32 (50%), 0x64 (100%), etc. in byte 4.
+- For toggle/on/off/stop, use `FF` in byte 4.
+
+**Command Codes (Byte 0):**
+| Code | Command | Description |
+|------|---------|-------------|
+| 00   | Set Brightness | Set to specific level (see below) |
+| 01   | On      | Turn fully on |
+| 02   | Off     | Turn fully off |
+| 03   | Ramp Up | Gradually increase brightness |
+| 04   | Ramp Down | Gradually decrease brightness |
+| 05   | Stop    | Stop an active ramp operation |
+| 24   | Toggle  | Switch between on and off |
+
+**Notes:**
+- The rest of the bytes (except for command, instance, and brightness/ramp) are typically set to FF or 00 as shown.
+- Always use your working example as a reference for byte order and values.
 
 ### Command Codes (CC)
 
@@ -38,47 +63,49 @@ Where:
 | 05 | Stop | Stop an active ramp operation |
 | 24 | Toggle | Switch between on and off |
 
-### Brightness Levels (BB)
+### Brightness Byte (Byte 4)
 
 - **00**: 0% (fully off)
+- **19**: 25%
 - **32**: 50% brightness
+- **4B**: 75% brightness
 - **64**: 100% brightness
-- **FF**: Not applicable (used with toggle/on/off commands)
+- **FF**: Not applicable (used with toggle/on/off/stop)
 
 ### Examples
 
-#### Controlling Instance 36
+#### Controlling Instance 36 (instance 36 = `FA24`)
 
 1. **Toggle Light 36**:
    ```
-   cansend can0 01FEDB24#24FFFA05FF00FFFF
+   cansend can0 01FEDB24#24FFFA24FF00FFFF
    ```
 
 2. **Turn Light 36 On**:
    ```
-   cansend can0 01FEDB24#01FFFA05FF00FFFF
+   cansend can0 01FEDB24#01FFFA24FF00FFFF
    ```
 
 3. **Turn Light 36 Off**:
    ```
-   cansend can0 01FEDB24#02FFFA05FF00FFFF
+   cansend can0 01FEDB24#02FFFA24FF00FFFF
    ```
 
 4. **Set Light 36 to 25% Brightness**:
    ```
-   cansend can0 01FEDB24#00FFFA051900FFFF
+   cansend can0 01FEDB24#00FFFA241900FFFF
    ```
    Note: 25% = 0x19 in hexadecimal
 
 5. **Set Light 36 to 75% Brightness**:
    ```
-   cansend can0 01FEDB24#00FFFA054B00FFFF
+   cansend can0 01FEDB24#00FFFA244B00FFFF
    ```
    Note: 75% = 0x4B in hexadecimal
 
 6. **Ramp Light 36 Up Slowly**:
    ```
-   cansend can0 01FEDB24#03FFFA050500FFFF
+   cansend can0 01FEDB24#03FFFA240500FFFF
    ```
    Note: 0x05 is a slow ramp rate
 
@@ -94,26 +121,23 @@ Where:
 
 #### Controlling Other Instances
 
-Replace the instance value (FA05 in the examples above) with the appropriate value for your target instance:
+Replace the instance value (`FA24` for instance 36) with the appropriate value for your target instance:
 
-- Instance 37: `FA06`
-- Instance 38: `FA07`
-- Instance 39: `FA08`
-- Instance 40: `FA09`
+- Instance 37: `FA25`
+- Instance 38: `FA26`
+- Instance 39: `FA27`
+- Instance 40: `FA28`
 
 For example, to toggle light instance 40:
 ```
-cansend can0 01FEDB24#24FFFA09FF00FFFF
+cansend can0 01FEDB24#24FFFA28FF00FFFF
 ```
 
 ### Instance Format in Payload
 
-In RV-C, the instance number appears to be encoded in the 5th and 6th bytes of the payload. In our examples:
-
-- `FA05` for instance 36 (decimal)
-- `FA06` for instance 37 (decimal)
-
-The exact format appears to be FA followed by the hex value of the instance number.
+- The instance is encoded as two bytes: `FA` (fixed), then the instance number as a single byte (hex).
+- E.g., instance 36 = `FA24`, instance 37 = `FA25`, etc.
+- Always confirm with a working example from your system.
 
 ## Notes
 
