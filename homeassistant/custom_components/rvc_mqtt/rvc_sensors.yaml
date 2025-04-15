@@ -124,6 +124,110 @@ sensor:
       manufacturer: "RVC"
       model: "DC_SOURCE_STATUS_2"
 
+  # Main House Battery DC Current (Source 2)
+  - platform: mqtt
+    unique_id: main_house_battery_dc_current_2
+    name: "Main House Battery DC Current (Source 2)"
+    state_topic: "RVC/DC_SOURCE_STATUS_2/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc current' in value_json %}
+        {{ value_json['dc current'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "A"
+    state_class: "measurement"
+    icon: "mdi:current-dc"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/DC_SOURCE_STATUS_2/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - main_house_battery_bank
+      name: "Main House Battery Bank"
+      manufacturer: "RVC"
+      model: "DC_SOURCE_STATUS_2"
+
+
+  # Inverter DC Status Voltage
+  - platform: mqtt
+    unique_id: inverter_dc_status_voltage
+    name: "Inverter DC Voltage"
+    state_topic: "RVC/INVERTER_DC_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc voltage' in value_json %}
+        {{ value_json['dc voltage'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "V"
+    state_class: "measurement"
+    icon: "mdi:car-battery"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/INVERTER_DC_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - inverter_dc_status
+      name: "Inverter DC Status"
+      manufacturer: "RVC"
+      model: "INVERTER_DC_STATUS"
+
+  # Inverter DC Status Amperage
+  - platform: mqtt
+    unique_id: inverter_dc_status_amperage
+    name: "Inverter DC Amperage"
+    state_topic: "RVC/INVERTER_DC_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc amperage' in value_json %}
+        {{ value_json['dc amperage'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "A"
+    state_class: "measurement"
+    icon: "mdi:current-dc"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/INVERTER_DC_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - inverter_dc_status
+      name: "Inverter DC Status"
+      manufacturer: "RVC"
+      model: "INVERTER_DC_STATUS"
+
+  # Inverter DC Status Raw Data
+  - platform: mqtt
+    unique_id: inverter_dc_status_raw
+    name: "Inverter DC Status Raw Data"
+    state_topic: "RVC/INVERTER_DC_STATUS/1"
+    value_template: >-
+      {% if value_json is defined %}
+        Voltage: {{ value_json['dc voltage'] }} V | Amperage: {{ value_json['dc amperage'] }} A | Instance: {{ value_json['instance'] }}
+      {% else %}
+        No data
+      {% endif %}
+    icon: "mdi:code-json"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    device:
+      identifiers:
+        - inverter_dc_status
+      name: "Inverter DC Status"
+      manufacturer: "RVC"
+      model: "INVERTER_DC_STATUS"
+
   # Fresh Water Tank Sensors
   - platform: mqtt
     unique_id: fresh_water_tank_level_relative
