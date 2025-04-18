@@ -228,6 +228,590 @@ sensor:
       manufacturer: "RVC"
       model: "INVERTER_DC_STATUS"
 
+  # AC Source Status
+  - platform: mqtt
+    unique_id: ac_source_status_voltage
+    name: "AC Source Voltage"
+    state_topic: "RVC/AC_SOURCE_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'ac voltage' in value_json %}
+        {{ value_json['ac voltage'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    unit_of_measurement: "V"
+    state_class: "measurement"
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_SOURCE_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_source_status
+      name: "AC Source Status"
+      manufacturer: "RVC"
+      model: "AC_SOURCE_STATUS"
+
+  # AC Load Status 208
+  - platform: mqtt
+    unique_id: ac_load_status_208
+    name: "AC Load Status 208"
+    state_topic: "RVC/AC_LOAD_STATUS/208"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/208"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_208
+      name: "AC Load Status 208"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+  # AC Load Status 209
+  - platform: mqtt
+    unique_id: ac_load_status_209
+    name: "AC Load Status 209"
+    state_topic: "RVC/AC_LOAD_STATUS/209"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/209"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_209
+      name: "AC Load Status 209"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+  # AC Load Status 210
+  - platform: mqtt
+    unique_id: ac_load_status_210
+    name: "AC Load Status 210"
+    state_topic: "RVC/AC_LOAD_STATUS/210"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/210"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_210
+      name: "AC Load Status 210"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+  # AC Load Status 211
+  - platform: mqtt
+    unique_id: ac_load_status_211
+    name: "AC Load Status 211"
+    state_topic: "RVC/AC_LOAD_STATUS/211"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/211"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_211
+      name: "AC Load Status 211"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+  # AC Load Status 212
+  - platform: mqtt
+    unique_id: ac_load_status_212
+    name: "AC Load Status 212"
+    state_topic: "RVC/AC_LOAD_STATUS/212"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/212"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_212
+      name: "AC Load Status 212"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+  # AC Load Status 213
+  - platform: mqtt
+    unique_id: ac_load_status_213
+    name: "AC Load Status 213"
+    state_topic: "RVC/AC_LOAD_STATUS/213"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/213"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_213
+      name: "AC Load Status 213"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+  # AC Load Status 214
+  - platform: mqtt
+    unique_id: ac_load_status_214
+    name: "AC Load Status 214"
+    state_topic: "RVC/AC_LOAD_STATUS/214"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating status' in value_json %}
+        {{ value_json['operating status'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:flash"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/AC_LOAD_STATUS/214"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - ac_load_status_214
+      name: "AC Load Status 214"
+      manufacturer: "RVC"
+      model: "AC_LOAD_STATUS"
+
+
+  # Generator Status 1
+  - platform: mqtt
+    unique_id: generator_status_1
+    name: "Generator Status 1"
+    state_topic: "RVC/GENERATOR_STATUS_1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'status definition' in value_json %}
+        {{ value_json['status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:generator"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/GENERATOR_STATUS_1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - generator_status_1
+      name: "Generator Status 1"
+      manufacturer: "RVC"
+      model: "GENERATOR_STATUS_1"
+
+  # Charger Status
+  - platform: mqtt
+    unique_id: charger_status
+    name: "Charger Status"
+    state_topic: "RVC/CHARGER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'operating state definition' in value_json %}
+        {{ value_json['operating state definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:battery-charging"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHARGER_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - charger_status
+      name: "Charger Status"
+      manufacturer: "RVC"
+      model: "CHARGER_STATUS"
+
+  # DC Load Status
+  - platform: mqtt
+    unique_id: dc_load_status
+    name: "DC Load Status"
+    state_topic: "RVC/DC_LOAD_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'dc load' in value_json %}
+        {{ value_json['dc load'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    icon: "mdi:flash-outline"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/DC_LOAD_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - dc_load_status
+      name: "DC Load Status"
+      manufacturer: "RVC"
+      model: "DC_LOAD_STATUS"
+
+  # Thermostat Status
+  - platform: mqtt
+    unique_id: thermostat_status
+    name: "Thermostat Status"
+    state_topic: "RVC/THERMOSTAT_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'temperature' in value_json %}
+        {{ value_json['temperature'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    unit_of_measurement: "°F"
+    state_class: "measurement"
+    icon: "mdi:thermostat"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/THERMOSTAT_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - thermostat_status
+      name: "Thermostat Status"
+      manufacturer: "RVC"
+      model: "THERMOSTAT_STATUS"
+
+  # Engine Status
+  - platform: mqtt
+    unique_id: engine_status
+    name: "Engine Status"
+    state_topic: "RVC/ENGINE_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'engine state' in value_json %}
+        {{ value_json['engine state'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    icon: "mdi:engine"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/ENGINE_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - engine_status
+      name: "Engine Status"
+      manufacturer: "RVC"
+      model: "ENGINE_STATUS"
+
+  # Chassis Mobility Status
+  - platform: mqtt
+    unique_id: chassis_mobility_status
+    name: "Chassis Mobility Status"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'park brake status definition' in value_json %}
+        {{ value_json['park brake status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:car"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - chassis_mobility_status
+      name: "Chassis Mobility Status"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Transmission Current Gear
+  - platform: mqtt
+    unique_id: transmission_current_gear
+    name: "Transmission Current Gear"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'transmission current gear definition' in value_json %}
+        {{ value_json['transmission current gear definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:car-shift-pattern"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - transmission_current_gear
+      name: "Transmission Current Gear"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Transmission Gear Selected
+  - platform: mqtt
+    unique_id: transmission_gear_selected
+    name: "Transmission Gear Selected"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'transmission gear selected definition' in value_json %}
+        {{ value_json['transmission gear selected definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:car-shift-pattern"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - transmission_gear_selected
+      name: "Transmission Gear Selected"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Transmission Lock Status
+  - platform: mqtt
+    unique_id: transmission_lock_status
+    name: "Transmission Lock Status"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'transmission lock status definition' in value_json %}
+        {{ value_json['transmission lock status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:lock"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - transmission_lock_status
+      name: "Transmission Lock Status"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Engine Lock Status
+  - platform: mqtt
+    unique_id: engine_lock_status
+    name: "Engine Lock Status"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'engine lock status definition' in value_json %}
+        {{ value_json['engine lock status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:engine-off"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - engine_lock_status
+      name: "Engine Lock Status"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Engine RPMs
+  - platform: mqtt
+    unique_id: engine_rpms
+    name: "Engine RPMs"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'engine rpms' in value_json %}
+        {{ value_json['engine rpms'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "rpm"
+    icon: "mdi:rotate-right"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - engine_rpms
+      name: "Engine RPMs"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Vehicle Speed
+  - platform: mqtt
+    unique_id: vehicle_speed
+    name: "Vehicle Speed"
+    state_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'vehicle speed' in value_json %}
+        {{ value_json['vehicle speed'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "km/h"
+    icon: "mdi:speedometer"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CHASSIS_MOBILITY_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - vehicle_speed
+      name: "Vehicle Speed"
+      manufacturer: "RVC"
+      model: "CHASSIS_MOBILITY_STATUS"
+
+  # Level Sensor
+  - platform: mqtt
+    unique_id: level_sensor
+    name: "Level Sensor"
+    state_topic: "RVC/LEVEL_SENSOR/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'level' in value_json %}
+        {{ value_json['level'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/LEVEL_SENSOR/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - level_sensor
+      name: "Level Sensor"
+      manufacturer: "RVC"
+      model: "LEVEL_SENSOR"
+
+  # Alarm Status
+  - platform: mqtt
+    unique_id: alarm_status
+    name: "Alarm Status"
+    state_topic: "RVC/ALARM_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'alarm state' in value_json %}
+        {{ value_json['alarm state'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    icon: "mdi:alarm-light"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/ALARM_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - alarm_status
+      name: "Alarm Status"
+      manufacturer: "RVC"
+      model: "ALARM_STATUS"
+
+  # Power Status
+  - platform: mqtt
+    unique_id: power_status
+    name: "Power Status"
+    state_topic: "RVC/POWER_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'power state' in value_json %}
+        {{ value_json['power state'] }}
+      {% else %}
+        {{ value_json | tojson }}
+      {% endif %}
+    icon: "mdi:power-plug"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/POWER_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - power_status
+      name: "Power Status"
+      manufacturer: "RVC"
+      model: "POWER_STATUS"
+
   # Fresh Water Tank Sensors
   - platform: mqtt
     unique_id: fresh_water_tank_level_relative
