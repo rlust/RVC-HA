@@ -970,6 +970,31 @@ sensor:
       manufacturer: "RVC"
       model: "CIRCULATION_PUMP_STATUS"
 
+  # Circulation Pump Composite Status
+  - platform: mqtt
+    unique_id: circulation_pump_composite_status
+    name: "Circulation Pump Composite Status"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping %}
+        Status: {{ value_json['output status definition'] if 'output status definition' in value_json else 'unknown' }} | Temp: {{ value_json['pump temperature status definition'] if 'pump temperature status definition' in value_json else 'unknown' }} | Overcurrent: {{ value_json['pump overcurrent status definition'] if 'pump overcurrent status definition' in value_json else 'unknown' }} | Undercurrent: {{ value_json['pump undercurrent status definition'] if 'pump undercurrent status definition' in value_json else 'unknown' }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:pump"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - circulation_pump_composite_status
+      name: "Circulation Pump Composite Status"
+      manufacturer: "RVC"
+      model: "CIRCULATION_PUMP_STATUS"
+
   # Alarm Status
   - platform: mqtt
     unique_id: alarm_status
