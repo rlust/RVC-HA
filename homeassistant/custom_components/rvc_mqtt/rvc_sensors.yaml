@@ -742,9 +742,9 @@ sensor:
     state_topic: "RVC/LEVEL_SENSOR/1"
     value_template: >-
       {% if value_json is defined and value_json is mapping and 'level' in value_json %}
-        {{ value_json['level'] }}
+        {{ ((value_json['level'] | float) / 24 * 100) | round(0) }}
       {% else %}
-        {{ value_json | tojson }}
+        unknown
       {% endif %}
     unit_of_measurement: "%"
     state_class: "measurement"
@@ -761,6 +761,114 @@ sensor:
       name: "Level Sensor"
       manufacturer: "RVC"
       model: "LEVEL_SENSOR"
+
+  # Black Water Level Sensor
+  - platform: mqtt
+    unique_id: black_water_level_sensor
+    name: "Black Water Level"
+    state_topic: "RVC/BLACK_WATER_LEVEL_SENSOR/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'level' in value_json %}
+        {{ ((value_json['level'] | float) / 24 * 100) | round(0) }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/BLACK_WATER_LEVEL_SENSOR/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - black_water_level_sensor
+      name: "Black Water Level Sensor"
+      manufacturer: "RVC"
+      model: "BLACK_WATER_LEVEL_SENSOR"
+
+  # Fresh Water Tank Level Sensor
+  - platform: mqtt
+    unique_id: fresh_water_tank_level
+    name: "Fresh Water Tank Level"
+    state_topic: "RVC/TANK_STATUS/0"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'relative level' in value_json and 'resolution' in value_json and (value_json['resolution'] | float) != 0 %}
+        {{ ((value_json['relative level'] | float) / (value_json['resolution'] | float) * 100) | round(0) }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/TANK_STATUS/0"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - fresh_water_tank_level
+      name: "Fresh Water Tank Level"
+      manufacturer: "RVC"
+      model: "TANK_STATUS"
+
+  # Black Water Tank Level Sensor
+  - platform: mqtt
+    unique_id: black_water_tank_level
+    name: "Black Water Tank Level"
+    state_topic: "RVC/TANK_STATUS/1"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'relative level' in value_json and 'resolution' in value_json and (value_json['resolution'] | float) != 0 %}
+        {{ ((value_json['relative level'] | float) / (value_json['resolution'] | float) * 100) | round(0) }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/TANK_STATUS/1"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - black_water_tank_level
+      name: "Black Water Tank Level"
+      manufacturer: "RVC"
+      model: "TANK_STATUS"
+
+  # Grey Water Tank Level Sensor
+  - platform: mqtt
+    unique_id: grey_water_tank_level
+    name: "Grey Water Tank Level"
+    state_topic: "RVC/TANK_STATUS/2"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'relative level' in value_json and 'resolution' in value_json and (value_json['resolution'] | float) != 0 %}
+        {{ ((value_json['relative level'] | float) / (value_json['resolution'] | float) * 100) | round(0) }}
+      {% else %}
+        unknown
+      {% endif %}
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: "mdi:water"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/TANK_STATUS/2"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - grey_water_tank_level
+      name: "Grey Water Tank Level"
+      manufacturer: "RVC"
+      model: "TANK_STATUS"
 
   # Alarm Status
   - platform: mqtt
