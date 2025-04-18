@@ -870,6 +870,106 @@ sensor:
       manufacturer: "RVC"
       model: "TANK_STATUS"
 
+  # Circulation Pump Output Status
+  - platform: mqtt
+    unique_id: circulation_pump_output_status
+    name: "Circulation Pump Output Status"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'output status definition' in value_json %}
+        {{ value_json['output status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:pump"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - circulation_pump_output_status
+      name: "Circulation Pump Output Status"
+      manufacturer: "RVC"
+      model: "CIRCULATION_PUMP_STATUS"
+
+  # Circulation Pump Overcurrent Status
+  - platform: mqtt
+    unique_id: circulation_pump_overcurrent_status
+    name: "Circulation Pump Overcurrent Status"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'pump overcurrent status definition' in value_json %}
+        {{ value_json['pump overcurrent status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:alert-circle"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - circulation_pump_overcurrent_status
+      name: "Circulation Pump Overcurrent Status"
+      manufacturer: "RVC"
+      model: "CIRCULATION_PUMP_STATUS"
+
+  # Circulation Pump Temperature Status
+  - platform: mqtt
+    unique_id: circulation_pump_temperature_status
+    name: "Circulation Pump Temperature Status"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'pump temperature status definition' in value_json %}
+        {{ value_json['pump temperature status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:thermometer"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - circulation_pump_temperature_status
+      name: "Circulation Pump Temperature Status"
+      manufacturer: "RVC"
+      model: "CIRCULATION_PUMP_STATUS"
+
+  # Circulation Pump Undercurrent Status
+  - platform: mqtt
+    unique_id: circulation_pump_undercurrent_status
+    name: "Circulation Pump Undercurrent Status"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    value_template: >-
+      {% if value_json is defined and value_json is mapping and 'pump undercurrent status definition' in value_json %}
+        {{ value_json['pump undercurrent status definition'] }}
+      {% else %}
+        unknown
+      {% endif %}
+    icon: "mdi:current-dc"
+    qos: 0
+    expire_after: 600
+    force_update: true
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_template: >-
+      {{ value_json | tojson }}
+    device:
+      identifiers:
+        - circulation_pump_undercurrent_status
+      name: "Circulation Pump Undercurrent Status"
+      manufacturer: "RVC"
+      model: "CIRCULATION_PUMP_STATUS"
+
   # Alarm Status
   - platform: mqtt
     unique_id: alarm_status
