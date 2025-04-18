@@ -874,7 +874,7 @@ sensor:
   - platform: mqtt
     unique_id: circulation_pump_output_status
     name: "Circulation Pump Output Status"
-    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     value_template: >-
       {% if value_json is defined and value_json is mapping and 'output status definition' in value_json %}
         {{ value_json['output status definition'] }}
@@ -885,7 +885,7 @@ sensor:
     qos: 0
     expire_after: 600
     force_update: true
-    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     json_attributes_template: >-
       {{ value_json | tojson }}
     device:
@@ -899,7 +899,7 @@ sensor:
   - platform: mqtt
     unique_id: circulation_pump_overcurrent_status
     name: "Circulation Pump Overcurrent Status"
-    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     value_template: >-
       {% if value_json is defined and value_json is mapping and 'pump overcurrent status definition' in value_json %}
         {{ value_json['pump overcurrent status definition'] }}
@@ -910,7 +910,7 @@ sensor:
     qos: 0
     expire_after: 600
     force_update: true
-    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     json_attributes_template: >-
       {{ value_json | tojson }}
     device:
@@ -924,7 +924,7 @@ sensor:
   - platform: mqtt
     unique_id: circulation_pump_temperature_status
     name: "Circulation Pump Temperature Status"
-    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     value_template: >-
       {% if value_json is defined and value_json is mapping and 'pump temperature status definition' in value_json %}
         {{ value_json['pump temperature status definition'] }}
@@ -935,7 +935,7 @@ sensor:
     qos: 0
     expire_after: 600
     force_update: true
-    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     json_attributes_template: >-
       {{ value_json | tojson }}
     device:
@@ -949,7 +949,7 @@ sensor:
   - platform: mqtt
     unique_id: circulation_pump_undercurrent_status
     name: "Circulation Pump Undercurrent Status"
-    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     value_template: >-
       {% if value_json is defined and value_json is mapping and 'pump undercurrent status definition' in value_json %}
         {{ value_json['pump undercurrent status definition'] }}
@@ -960,7 +960,7 @@ sensor:
     qos: 0
     expire_after: 600
     force_update: true
-    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     json_attributes_template: >-
       {{ value_json | tojson }}
     device:
@@ -974,7 +974,7 @@ sensor:
   - platform: mqtt
     unique_id: circulation_pump_composite_status
     name: "Circulation Pump Composite Status"
-    state_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    state_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     value_template: >-
       {% if value_json is defined and value_json is mapping %}
         Status: {{ value_json['output status definition'] if 'output status definition' in value_json else 'unknown' }} | Temp: {{ value_json['pump temperature status definition'] if 'pump temperature status definition' in value_json else 'unknown' }} | Overcurrent: {{ value_json['pump overcurrent status definition'] if 'pump overcurrent status definition' in value_json else 'unknown' }} | Undercurrent: {{ value_json['pump undercurrent status definition'] if 'pump undercurrent status definition' in value_json else 'unknown' }}
@@ -985,7 +985,7 @@ sensor:
     qos: 0
     expire_after: 600
     force_update: true
-    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS"
+    json_attributes_topic: "RVC/CIRCULATION_PUMP_STATUS/1"
     json_attributes_template: >-
       {{ value_json | tojson }}
     device:
