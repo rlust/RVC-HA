@@ -1,0 +1,6 @@
+broker: 100.110.189.122
+port: 9001
+username: rc
+password: rc
+client_id: home_assistant
+protocol: websockets

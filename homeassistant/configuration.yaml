@@ -4,17 +4,24 @@ homeassistant:
   time_zone: America/New_York
   customize: !include customizations.yaml
 
-# Enable the MQTT integration without any configuration
-# This will use the UI to configure MQTT
+# Configure MQTT with the correct broker details
 mqtt:
+  # Used for UI configuration
 
-# Include the lights configuration
-# Using simplified command format (instance command brightness)
-light: !include lights_simple.yaml
-# Alternative configurations:
-# light: !include lights.yaml           # Original JSON format
-# light: !include lights_direct.yaml    # Direct MQTT format (no Node-RED required)
-sensor: !include mqtt_sensors.yaml
+
+# RVC MQTT custom component for sensors and climate controls
+rvc_mqtt:
+  # Load the main sensor configuration
+  sensor: !include custom_components/rvc_mqtt/rvc_sensors.yaml
+  # Load the thermostat sensors configuration
+  thermostat_sensor: !include custom_components/rvc_mqtt/thermostat_sensors.yaml
+  # Load the climate controls configuration
+  climate: !include custom_components/rvc_mqtt/climate.yaml
+  # Load the thermostat climate controls configuration
+  thermostat_climate: !include custom_components/rvc_mqtt/thermostat_climate.yaml
+
+# Additional MQTT device configuration can be done through the UI
+# Configuration > Devices & Services > MQTT > Configure
 
 # Configure logging
 logger:
@@ -22,6 +29,8 @@ logger:
   logs:
     homeassistant.components.mqtt: debug
     custom_components.rvc_lights: debug
+    custom_components.rvc_mqtt: debug
+    custom_components.rvc_mqtt.climate: debug
 
 # Configure history
 history:
@@ -38,9 +47,28 @@ rvc_lights:
 
 # Enable the frontend
 frontend:
+  # Note: themes directory may need to be created
+  # themes: !include_dir_merge_named themes
+  extra_module_url:
+    - /local/community/lovelace-card-mod/card-mod.js
+  
+# Dashboards
+lovelace:
+  mode: yaml
+  dashboards:
+    rv-thermostats:  # Changed to include a hyphen as required
+      mode: yaml
+      title: RV Thermostats
+      icon: mdi:thermometer
+      show_in_sidebar: true
+      filename: rvc_thermostats_dashboard.yaml
 
 # Enable configuration UI
 config:
+
+# Load the thermostat helper entities configuration
+input_number: !include_dir_merge_named custom_components/rvc_mqtt/input_number
+input_select: !include_dir_merge_named custom_components/rvc_mqtt/input_select
 
 # Default dependencies
 http:

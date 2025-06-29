@@ -1,0 +1,32 @@
+# Bedroom Area Lights
+- platform: mqtt
+  schema: template
+  name: "Bed Ceiling A"
+  unique_id: rvc_bed_ceiling_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/25"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/25"
+  optimistic: true
+  brightness_template: "{{ value_json.level }}"
+  command_on_template: >-
+    {"command": 19, "command definition": "ramp up", "instance": 25, "desired level": 55, "delay/duration": 255}
+  command_off_template: >-
+    {"command": 3, "command definition": "off", "instance": 25, "desired level": 0, "delay/duration": 255}
+  brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/25"
+  brightness_command_template: >-
+    {"command": 19, "command definition": "ramp up", "instance": 25, "desired level": {{ value }}, "delay/duration": 255}
+
+- platform: mqtt
+  schema: template
+  name: "Sink"
+  unique_id: rvc_sink
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/46"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/46"
+  optimistic: true
+  brightness_template: "{{ value_json.level }}"
+  command_on_template: >-
+    {"command": 19, "command definition": "ramp up", "instance": 46, "desired level": 55, "delay/duration": 255}
+  command_off_template: >-
+    {"command": 3, "command definition": "off", "instance": 46, "desired level": 0, "delay/duration": 255}
+  brightness_command_topic: "RVC/DC_DIMMER_COMMAND_2/46"
+  brightness_command_template: >-
+    {"command": 19, "command definition": "ramp up", "instance": 46, "desired level": {{ value }}, "delay/duration": 255}

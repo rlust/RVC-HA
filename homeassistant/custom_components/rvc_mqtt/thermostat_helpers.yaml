@@ -1,0 +1,86 @@
+input_number:
+  # Front Thermostat Temperature Setpoints
+  front_thermostat_cool_temp:
+    name: Front Thermostat Cool Temperature
+    min: 60
+    max: 90
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-minus
+    mode: slider
+  front_thermostat_heat_temp:
+    name: Front Thermostat Heat Temperature
+    min: 60
+    max: 90
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-plus
+    mode: slider
+    
+  # Mid Thermostat Temperature Setpoints
+  mid_thermostat_cool_temp:
+    name: Mid Thermostat Cool Temperature
+    min: 60
+    max: 90
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-minus
+    mode: slider
+  mid_thermostat_heat_temp:
+    name: Mid Thermostat Heat Temperature
+    min: 60
+    max: 90
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-plus
+    mode: slider
+    
+  # Rear Thermostat Temperature Setpoints
+  rear_thermostat_cool_temp:
+    name: Rear Thermostat Cool Temperature
+    min: 60
+    max: 90
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-minus
+    mode: slider
+  rear_thermostat_heat_temp:
+    name: Rear Thermostat Heat Temperature
+    min: 60
+    max: 90
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-plus
+    mode: slider
+
+input_select:
+  # Fan Mode Selectors
+  front_thermostat_fan_mode:
+    name: Front Thermostat Fan Mode
+    options:
+      - auto
+      - low
+      - medium
+      - high
+    initial: auto
+    icon: mdi:fan
+  
+  mid_thermostat_fan_mode:
+    name: Mid Thermostat Fan Mode
+    options:
+      - auto
+      - low
+      - medium
+      - high
+    initial: auto
+    icon: mdi:fan
+  
+  rear_thermostat_fan_mode:
+    name: Rear Thermostat Fan Mode
+    options:
+      - auto
+      - low
+      - medium
+      - high
+    initial: auto
+    icon: mdi:fan

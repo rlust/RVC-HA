@@ -42,20 +42,12 @@ ENV/
 *.swp
 *.swo
 
-# Logs
-logs
-*.log
 
 # Docker
 .docker/
 docker-compose.override.yml
 
-# Mosquitto
-mosquitto/data/
-mosquitto/log/
 
-# Home Assistant
-homeassistant/
 
 # OS specific
 .DS_Store
@@ -67,8 +59,7 @@ ehthumbs.db
 Thumbs.db
 
 # Log files
-*.log
-*.csv
+
 
 # Database files
 *.db

@@ -29,12 +29,39 @@ RVC_DIRECT_COMMAND_TOPIC = "RVC/DIRECT_COMMAND"
 
 # Predefined lights with friendly names (from const.py)
 RVC_LIGHTS = {
-    45: "Ceiling Light",
-    46: "Kitchen Light",
-    47: "Bathroom Light",
-    48: "Bedroom Light",
-    49: "Dinette Light",
-    50: "Patio Light"
+    25: "Bed Ceiling Lts A",
+    26: "Bed Ceiling Lts B",
+    27: "Bed Accent",
+    28: "Bed Vanity",
+    29: "Courtesy",
+    30: "RR Bath Ceiling",
+    31: "RR Bath Lav Lts",
+    32: "RR Bath Accent",
+    33: "Mid Bath Ceiling",
+    34: "Mid Bath Accent",
+    35: "Entry Ceiling",
+    36: "Living Edge",
+    37: "Livrm Ceiling A",
+    38: "Livrm Ceiling B",
+    39: "Livrm Accent A",
+    40: "Livrm Accent B",
+    41: "Sofa Ceiling",
+    42: "Kitchen Ceiling",
+    44: "D/S Slide",
+    45: "Dinette",
+    46: "Sink",
+    47: "Midship",
+    49: "Door Awning Extend",
+    50: "Door Awning Retract",
+    51: "Awning D/S",
+    52: "Awning P/S",
+    53: "Cargo",
+    54: "Under Slide",
+    56: "Bed Reading",
+    57: "Security D/S",
+    58: "Security P/S",
+    59: "Security Motion",
+    60: "Porch"
 }
 
 def connect_mqtt():
@@ -45,9 +72,14 @@ def connect_mqtt():
         else:
             _LOGGER.error(f"Failed to connect, return code {rc}")
     
-    # Set up the client
-    client = mqtt_client.Client(MQTT_CLIENT_ID)
-    
+    # Set up the client with proper version handling
+    try:
+        # Try modern client with callback_api_version parameter (paho-mqtt >= 2.0)
+        client = mqtt_client.Client(client_id=MQTT_CLIENT_ID, callback_api_version=mqtt_client.CallbackAPIVersion.VERSION1)
+    except (TypeError, AttributeError):
+        # Fall back to older client version (paho-mqtt < 2.0)
+        client = mqtt_client.Client(MQTT_CLIENT_ID)
+        
     # Set credentials if provided
     if MQTT_USERNAME and MQTT_PASSWORD:
         client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
@@ -63,20 +95,25 @@ def publish_status(client, instance, state=True, brightness=100):
     """Publish light status for discovery."""
     topic = f"{RVC_STATUS_TOPIC_PREFIX}/{instance}"
     
-    # Create payload
+    # Create payload in the format expected by custom component
+    # These are the exact field names expected in our component's const.py
     payload = {
-        "name": "DC_DIMMER_STATUS_3",
+        "name": "DC_DIMMER_STATUS_3",  # Required for discovery
+        "data": "2E7C40FCFF0504FF",  # Example data field
+        "delay/duration": 255,
+        "destination address": 0,
+        "dimmer mode": 255,
         "instance": instance,
-        "state": state,
-        "brightness": brightness,
-        "timestamp": int(time.time())
+        "load status": "Active" if state else "Inactive",  # matches LOAD_STATUS_KEY
+        "operating status (brightness)": brightness if state else 0,  # matches STATE_KEY
+        "source address": 0
     }
     
     # Publish message
     result = client.publish(topic, json.dumps(payload))
     status = result[0]
     if status == 0:
-        _LOGGER.info(f"Published status to {topic}: {payload}")
+        _LOGGER.info(f"Published status to {topic}: {instance} - {brightness}% {'ON' if state else 'OFF'}")
     else:
         _LOGGER.error(f"Failed to publish to {topic}")
 
@@ -98,6 +135,9 @@ def simulate_all_lights(client):
 
 def run():
     """Run the test script."""
+    # Declare global variables at the start of the function
+    global MQTT_BROKER, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD
+    
     parser = argparse.ArgumentParser(description="Test RVC Lights integration with MQTT")
     parser.add_argument('--broker', type=str, default=MQTT_BROKER, help='MQTT broker address')
     parser.add_argument('--port', type=int, default=MQTT_PORT, help='MQTT broker port')
@@ -106,7 +146,6 @@ def run():
     args = parser.parse_args()
     
     # Update globals with command line args
-    global MQTT_BROKER, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD
     MQTT_BROKER = args.broker
     MQTT_PORT = args.port
     MQTT_USERNAME = args.username

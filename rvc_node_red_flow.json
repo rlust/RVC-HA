@@ -1,0 +1,98 @@
+[
+    {
+        "id": "rvc-mqtt-command-flow",
+        "type": "tab",
+        "label": "RVC MQTT Command Flow",
+        "disabled": false,
+        "info": "This flow receives commands via MQTT and formats them for RVC lights"
+    },
+    {
+        "id": "mqtt-input",
+        "type": "mqtt in",
+        "z": "rvc-mqtt-command-flow",
+        "name": "Listen for RVC Commands",
+        "topic": "node-red/rvc/commands",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker",
+        "x": 170,
+        "y": 120,
+        "wires": [
+            [
+                "process-command"
+            ]
+        ]
+    },
+    {
+        "id": "process-command",
+        "type": "function",
+        "z": "rvc-mqtt-command-flow",
+        "name": "Format RVC Command",
+        "func": "// Parse the space-separated payload\nconst parts = msg.payload.toString().trim().split(' ');\n\n// Make sure we have all required parts\nif (parts.length < 3) {\n    node.error(\"Invalid payload format, expected: 'instance command brightness'\", msg);\n    return null;\n}\n\n// Get the values\nconst instance = parts[0];\nconst command = parseInt(parts[1]);\nconst brightness = parseInt(parts[2]);\n\n// Define command type based on command code\nlet commandDefinition = \"ramp up\";\nif (command === 3) {\n    commandDefinition = \"off\";\n}\n\n// Format the payload for RVC\nconst rvcPayload = {\n    command: command,\n    \"command definition\": commandDefinition,\n    instance: parseInt(instance),\n    \"desired level\": brightness,\n    \"delay/duration\": 255\n};\n\n// Set up the message to be sent\nmsg.topic = `RVC/DC_DIMMER_COMMAND_2/${instance}`;\nmsg.payload = rvcPayload;\n\n// Log the command for debugging\nnode.log(`Sending command to ${msg.topic}: ${JSON.stringify(rvcPayload)}`);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 380,
+        "y": 120,
+        "wires": [
+            [
+                "mqtt-output",
+                "debug"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-output",
+        "type": "mqtt out",
+        "z": "rvc-mqtt-command-flow",
+        "name": "Send to RVC Lights",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "broker": "mqtt-broker",
+        "x": 590,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "debug",
+        "type": "debug",
+        "z": "rvc-mqtt-command-flow",
+        "name": "Debug Commands",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 590,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "RVC MQTT Broker",
+        "broker": "100.110.189.122",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "username": "rc",
+        "password": "rc",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    }
+]

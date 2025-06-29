@@ -1,0 +1,15 @@
+# Basic core configuration
+default_config:
+
+# Configure Home Assistant
+homeassistant:
+  name: RVC Home Assistant
+  unit_system: imperial
+  time_zone: America/New_York
+
+# Enable and configure MQTT integration using the add-on approach
+# This specifies just the component with no configuration
+mqtt:
+
+# Include the lights configuration
+light: !include lights.yaml

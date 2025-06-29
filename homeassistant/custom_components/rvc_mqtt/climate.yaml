@@ -1,0 +1,26 @@
+climate:
+  # Front AC Unit (Instance 1)
+  - platform: mqtt
+    name: "Front AC"
+    unique_id: front_ac_climate
+    topic: "RVC/AIR_CONDITIONER_COMMAND/1"
+    instance: 1
+    device:
+      identifiers:
+        - rv_front_ac
+      name: "RV Front AC"
+      manufacturer: "RVC"
+      model: "RVC Air Conditioner System"
+      
+  # Optional: Add more AC units if needed
+  # - platform: mqtt
+  #   name: "Rear AC"
+  #   unique_id: rear_ac_climate
+  #   topic: "RVC/AIR_CONDITIONER_COMMAND/2"
+  #   instance: 2
+  #   device:
+  #     identifiers:
+  #       - rv_rear_ac
+  #     name: "RV Rear AC"
+  #     manufacturer: "RVC"
+  #     model: "RVC Air Conditioner System"

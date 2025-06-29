@@ -57,6 +57,30 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             async_load_platform(hass, 'sensor', DOMAIN, component_config, config)
         )
         _LOGGER.info(f"Set up {len(component_config.get('sensor', []))} total RVC MQTT sensors")
+        
+    # Load climate configuration
+    climate_config_path = os.path.join(hass.config.config_dir, "custom_components", DOMAIN, "climate.yaml")
+    _LOGGER.info(f"Loading RVC MQTT climate controls from {climate_config_path}")
+    
+    climate_component_config = {"climate": []}
+    
+    try:
+        with open(climate_config_path, 'r') as file:
+            climate_config = yaml.safe_load(file)
+            _LOGGER.info(f"Loaded climate configuration")
+            
+            if climate_config and 'climate' in climate_config:
+                climate_component_config["climate"].extend(climate_config.get("climate", []))
+                _LOGGER.info(f"Loaded {len(climate_config.get('climate', []))} climate devices from config")
+    except Exception as e:
+        _LOGGER.error(f"Error loading RVC MQTT climate configuration: {e}")
+    
+    # Forward the climate configuration to the climate platform
+    if climate_component_config["climate"]:
+        hass.async_create_task(
+            async_load_platform(hass, 'climate', DOMAIN, climate_component_config, config)
+        )
+        _LOGGER.info(f"Set up {len(climate_component_config.get('climate', []))} total RVC MQTT climate controls")
     
     return True
 
@@ -65,8 +89,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.async_create_task(
         hass.config_entries.async_forward_entry_setup(entry, "sensor")
     )
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(entry, "climate")
+    )
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_forward_entry_unload(entry, "sensor")
+    await hass.config_entries.async_forward_entry_unload(entry, "sensor")
+    await hass.config_entries.async_forward_entry_unload(entry, "climate")
+    return True

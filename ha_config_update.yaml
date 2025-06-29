@@ -1,0 +1,14 @@
+# Add this to your configuration.yaml
+
+# Enable RVC Lights integration with auto-discovery
+rvc_lights:
+  enable_auto_discovery: true
+
+# Your existing MQTT configuration should remain:
+# mqtt:
+
+# Your existing light config can stay as is for now:
+# light: !include lights.yaml
+
+# After testing, you can replace your lights.yaml with:
+# light: !include rvc_lights.yaml

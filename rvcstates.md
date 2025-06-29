@@ -113,3 +113,125 @@ RVC/AIR_CONDITIONER_STATUS/2
   "second stage dead band": 0,
   "timestamp": "1743620952.426055"
 }
+Example for Middle HVAC (Instance 2):
+
+```text
+RVC/AIR_CONDITIONER_STATUS/2
+```
+
+### Example Payload (Instance 2)
+
+```json
+{
+  "air conditioning output level": 0,
+  "data": "0200FFFF0000FF00",
+  "dead band": 255,
+  "dgn": "1FFE1",
+  "fan speed": 0,
+  "instance": 2,
+  "max air conditioning output level": "n/a",
+  "max fan speed": "n/a",
+  "name": "AIR_CONDITIONER_STATUS",
+  "operating mode": 0,
+  "operating mode definition": "automatic",
+  "second stage dead band": 0,
+  "timestamp": "1743620952.426055"
+}
+```
+
+
+## Air Conditioner Control
+
+To control an HVAC unit, publish a command to the following MQTT topic format, replacing `{instance}` with the specific unit instance (e.g., 1 for the front unit):
+
+```text
+RVC/AIR_CONDITIONER_COMMAND/{instance}
+```
+
+Example for Front HVAC (Instance 1):
+
+```text
+RVC/AIR_CONDITIONER_COMMAND/1
+```
+
+### Example Command Payload (Instance 1)
+
+```json
+{
+  "air conditioning output level": 100,
+  "data": "0101FFFF64C8FFFF",
+  "dead band": 255,
+  "dgn": "1FFE0",
+  "fan speed": 50,
+  "instance": 1,
+  "max air conditioning output level": "n/a",
+  "max fan speed": "n/a",
+  "name": "AIR_CONDITIONER_COMMAND",
+  "operating mode": 1,
+  "operating mode definition": "manual",
+  "second stage dead band": 255,
+  "timestamp": "1744389834.473108"
+}
+```
+
+Key fields for commands:
+* `operating mode`: Sets the mode (0 = automatic, 1 = manual)
+* `operating mode definition`: Human-readable mode description
+* `fan speed`: Sets the desired fan speed percentage (0-100)
+* `air conditioning output level`: Sets the desired cooling output level percentage (0-100)
+
+Example for Middle HVAC (Instance 2):
+
+```text
+RVC/AIR_CONDITIONER_COMMAND/2
+```
+
+### Example Command Payload (Instance 2)
+
+```json
+{
+  "air conditioning output level": 0,
+  "data": "0200FFFF0000FFFF",
+  "dead band": 255,
+  "dgn": "1FFE0",
+  "fan speed": 0,
+  "instance": 2,
+  "max air conditioning output level": "n/a",
+  "max fan speed": "n/a",
+  "name": "AIR_CONDITIONER_COMMAND",
+  "operating mode": 0,
+  "operating mode definition": "automatic",
+  "second stage dead band": 255,
+  "timestamp": "1744390157.459889"
+}
+```
+
+Note the difference in operating mode between instances:
+* Instance 1 (Front): `operating mode` = 1 (manual)
+* Instance 2 (Mid): `operating mode` = 0 (automatic)
+
+Example for Rear HVAC (Instance 3):
+
+```text
+RVC/AIR_CONDITIONER_COMMAND/3
+```
+
+### Example Command Payload (Instance 3)
+
+```json
+{
+  "air conditioning output level": 0,
+  "data": "0300FFFF0000FFFF",
+  "dead band": 255,
+  "dgn": "1FFE0",
+  "fan speed": 0,
+  "instance": 3,
+  "max air conditioning output level": "n/a",
+  "max fan speed": "n/a",
+  "name": "AIR_CONDITIONER_COMMAND",
+  "operating mode": 0,
+  "operating mode definition": "automatic",
+  "second stage dead band": 255,
+  "timestamp": "1744390252.451070"
+}
+```

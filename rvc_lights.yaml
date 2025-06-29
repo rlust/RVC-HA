@@ -1,0 +1,18 @@
+# Example manual configuration for RVC lights
+# You only need this if you want to configure lights manually in addition to auto-discovery
+
+# Sink light with instance ID 46
+- platform: rvc_lights
+  name: "Sink Light"
+  unique_id: rvc_sink_light
+  instance: 46
+  default_brightness: 75
+  optimistic: false
+
+# Add other manually configured lights below if needed
+# - platform: rvc_lights
+#   name: "Living Room Light"
+#   unique_id: rvc_living_room_light
+#   instance: 1
+#   default_brightness: 70
+#   optimistic: false

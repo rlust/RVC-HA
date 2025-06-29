@@ -1,0 +1,48 @@
+homeassistant:
+  name: RVC Home Assistant
+  unit_system: imperial
+  time_zone: America/New_York
+
+# MQTT Configuration
+mqtt:
+  broker: !secret mqtt_broker
+  port: !secret mqtt_port
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+  client_id: home_assistant
+  discovery: true
+  birth_message:
+    topic: homeassistant/status
+    payload: online
+  will_message:
+    topic: homeassistant/status
+    payload: offline
+
+# Include the lights configuration
+light: !include lights.yaml
+sensor: !include mqtt_sensors.yaml
+
+# Configure logging
+logger:
+  default: info
+  logs:
+    homeassistant.components.mqtt: debug
+
+# Configure history
+history:
+
+# Configure custom recorder settings
+recorder:
+  purge_keep_days: 30
+
+# Enable the frontend
+frontend:
+
+# Enable configuration UI
+config:
+
+# Default dependencies
+http:
+
+# Enable automation
+automation:

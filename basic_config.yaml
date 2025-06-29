@@ -1,0 +1,9 @@
+# Configure Home Assistant
+homeassistant:
+  name: RVC Home Assistant
+
+# Include the lights configuration
+light: !include lights.yaml
+
+# Enable required components
+default_config:

@@ -1,0 +1,314 @@
+[
+    {
+        "id": "front-ac-flow",
+        "type": "tab",
+        "label": "Front AC Control",
+        "disabled": false,
+        "info": "Flow to control the front AC unit via MQTT using RV-C protocol",
+        "env": []
+    },
+    {
+        "id": "mqtt-config",
+        "type": "mqtt-broker",
+        "name": "RVC MQTT Broker",
+        "broker": "100.110.189.122",
+        "port": "1883",
+        "clientid": "node-red-front-ac-controller",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": "",
+        "credentials": {
+            "user": "rc",
+            "password": "rc"
+        }
+    },
+    {
+        "id": "ac-dashboard",
+        "type": "ui_group",
+        "name": "Front AC Control",
+        "tab": "rv-dashboard",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "rv-dashboard",
+        "type": "ui_tab",
+        "name": "RV Controls",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "fan-slider",
+        "type": "ui_slider",
+        "z": "front-ac-flow",
+        "name": "Fan Speed",
+        "label": "Fan Speed (%)",
+        "tooltip": "",
+        "group": "ac-dashboard",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "fanSpeed",
+        "topicType": "str",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "className": "",
+        "x": 300,
+        "y": 100,
+        "wires": [
+            [
+                "ac-command-prep"
+            ]
+        ]
+    },
+    {
+        "id": "ac-slider",
+        "type": "ui_slider",
+        "z": "front-ac-flow",
+        "name": "AC Output",
+        "label": "AC Output Level (%)",
+        "tooltip": "",
+        "group": "ac-dashboard",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "acOutput",
+        "topicType": "str",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "className": "",
+        "x": 300,
+        "y": 160,
+        "wires": [
+            [
+                "ac-command-prep"
+            ]
+        ]
+    },
+    {
+        "id": "mode-dropdown",
+        "type": "ui_dropdown",
+        "z": "front-ac-flow",
+        "name": "Operating Mode",
+        "label": "Operating Mode",
+        "tooltip": "",
+        "place": "Select mode",
+        "group": "ac-dashboard",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Manual",
+                "value": "Manual",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "operatingMode",
+        "topicType": "str",
+        "className": "",
+        "x": 300,
+        "y": 220,
+        "wires": [
+            [
+                "ac-command-prep"
+            ]
+        ]
+    },
+    {
+        "id": "send-command",
+        "type": "ui_button",
+        "z": "front-ac-flow",
+        "name": "Send Command",
+        "group": "ac-dashboard",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Send Command",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "sendCommand",
+        "topicType": "str",
+        "x": 300,
+        "y": 280,
+        "wires": [
+            [
+                "ac-command-trigger"
+            ]
+        ]
+    },
+    {
+        "id": "ac-command-prep",
+        "type": "function",
+        "z": "front-ac-flow",
+        "name": "Store Parameter",
+        "func": "// Store the incoming parameter in flow context\nconst topic = msg.topic;\nconst value = msg.payload;\n\nflow.set(topic, value);\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ac-command-trigger",
+        "type": "function",
+        "z": "front-ac-flow",
+        "name": "Generate AC Command",
+        "func": "// Get parameters from flow context\nconst fanSpeed = flow.get('fanSpeed') || 100;\nconst acOutput = flow.get('acOutput') || 100;\nconst operatingMode = flow.get('operatingMode') || 'Manual';\n\n// Map mode to RV-C value (1 = Manual)\nconst modeMap = { \"Manual\": 1 };\nconst modeValue = modeMap[operatingMode] || 1;\n\n// Function to generate raw RV-C data\nfunction generateRvcData(instance, mode, fan_speed, ac_output) {\n    // Scale 0-100 to 0-200\n    const fanHex = Math.floor(fan_speed * 2);\n    const acHex = Math.floor(ac_output * 2);\n    \n    // Format: Instance (1 byte), Mode (1 byte), Dead Band (2 bytes), Fan Speed (2 bytes), AC Output (2 bytes)\n    let data = `01${mode.toString(16).padStart(2, '0')}FFFF${\n        fanHex.toString(16).padStart(2, '0')}${\n        fanHex.toString(16).padStart(2, '0')}${\n        acHex.toString(16).padStart(2, '0')}${\n        acHex.toString(16).padStart(2, '0')}`;\n    \n    return data.toUpperCase();\n}\n\n// Create the JSON payload\nconst payload = {\n    \"air conditioning output level\": acOutput,\n    \"data\": generateRvcData(1, modeValue, fanSpeed, acOutput),\n    \"fan speed\": fanSpeed,\n    \"instance\": 1,\n    \"operating mode\": modeValue,\n    \"operating mode definition\": operatingMode.toLowerCase(),\n    \"timestamp\": Date.now() / 1000\n};\n\n// Set the topic and payload for MQTT publish\nmsg.topic = \"RVC/AIR_CONDITIONER_COMMAND/1/set\";\nmsg.payload = JSON.stringify(payload);\n\n// Set status message for display\nnode.status({fill:\"green\", shape:\"dot\", text:`Sent: Fan ${fanSpeed}%, AC ${acOutput}%, Mode ${operatingMode}`});\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 280,
+        "wires": [
+            [
+                "mqtt-publish",
+                "status-display"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-publish",
+        "type": "mqtt out",
+        "z": "front-ac-flow",
+        "name": "Publish AC Command",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-config",
+        "x": 750,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "status-display",
+        "type": "ui_text",
+        "z": "front-ac-flow",
+        "group": "ac-dashboard",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Status",
+        "label": "Status:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 740,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "status-formatter",
+        "type": "function",
+        "z": "front-ac-flow",
+        "name": "Format Status",
+        "func": "// Extract the values from the command payload\nconst payload = JSON.parse(msg.payload);\n\nmsg.payload = `Fan: ${payload['fan speed']}%, ` +\n              `AC: ${payload['air conditioning output level']}%, ` +\n              `Mode: ${payload['operating mode definition']}`;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 340,
+        "wires": [
+            [
+                "status-display"
+            ]
+        ]
+    },
+    {
+        "id": "ac-connection-check",
+        "type": "mqtt in",
+        "z": "front-ac-flow",
+        "name": "Subscribe to AC Status",
+        "topic": "RVC/AIR_CONDITIONER_STATUS/1/state",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-config",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 300,
+        "y": 400,
+        "wires": [
+            [
+                "ac-status-handler"
+            ]
+        ]
+    },
+    {
+        "id": "ac-status-handler",
+        "type": "function",
+        "z": "front-ac-flow",
+        "name": "Update AC Status",
+        "func": "// Update flow variables with current AC status\nif (msg.payload) {\n    try {\n        // Parse the incoming message if it's a string\n        const status = typeof msg.payload === 'string' ? \n            JSON.parse(msg.payload) : msg.payload;\n        \n        // Update flow context with current values\n        if (status['fan speed'] !== undefined) {\n            flow.set('fanSpeed', status['fan speed']);\n        }\n        \n        if (status['air conditioning output level'] !== undefined) {\n            flow.set('acOutput', status['air conditioning output level']);\n        }\n        \n        if (status['operating mode definition'] !== undefined) {\n            flow.set('operatingMode', status['operating mode definition'].charAt(0).toUpperCase() + \n                               status['operating mode definition'].slice(1));\n        }\n        \n        // Create messages to update UI elements\n        const fanMsg = { topic: 'fanSpeed', payload: flow.get('fanSpeed') };\n        const acMsg = { topic: 'acOutput', payload: flow.get('acOutput') };\n        const modeMsg = { topic: 'operatingMode', payload: flow.get('operatingMode') };\n        \n        // Send update messages to UI elements\n        node.send([fanMsg, acMsg, modeMsg]);\n    } catch (e) {\n        node.error(\"Error processing AC status: \" + e.message);\n    }\n}\n\nreturn null;",
+        "outputs": 3,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 400,
+        "wires": [
+            [
+                "fan-slider"
+            ],
+            [
+                "ac-slider"
+            ],
+            [
+                "mode-dropdown"
+            ]
+        ]
+    }
+]

@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  # Home Assistant
+  homeassistant:
+    image: homeassistant/home-assistant:latest
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./homeassistant:/config
+    environment:
+      - TZ=America/New_York
+    restart: unless-stopped
+    # Connect to the external MQTT broker directly
+    # Note: No dependency on local mosquitto container
+    # Use the same network as the main docker-compose.yml
+    network_mode: "bridge"

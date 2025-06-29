@@ -1,0 +1,231 @@
+[
+    {
+        "id": "rvc-thermostat-ac-flow",
+        "type": "tab",
+        "label": "RV-C Thermostat & AC Control",
+        "disabled": false,
+        "info": "This flow decodes RV-C thermostat and AC control parameters from CAN bus messages and publishes them to MQTT."
+    },
+    {
+        "id": "socketcan-in",
+        "type": "socketcan-in",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "RV-C CAN Interface",
+        "interface": "can0",
+        "extended": true,
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "rvc-decoder"
+            ]
+        ]
+    },
+    {
+        "id": "rvc-decoder",
+        "type": "function",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "RVC Thermostat Decoder",
+        "func": "// Extract DGN from CAN ID\nconst canId = msg.payload.id;\nconst dgn = (canId >> 8) & 0x1FFFF;\n\n// Only process thermostat/AC related messages\nconst THERMOSTAT_STATUS_1 = 0x1FED9; // Thermostat Status 1\nconst THERMOSTAT_STATUS_2 = 0x1FEDA; // Thermostat Status 2\nconst AC_STATUS = 0x1FF85;  // Air Conditioner Status\n\nlet payload = null;\n\nif (dgn === THERMOSTAT_STATUS_1) {\n    // Process Thermostat Status 1 message\n    const data = msg.payload.data;\n    const instance = data[0]; // Instance byte\n    \n    // Decode operating mode (bits 0-1 of byte 1)\n    const modeCode = data[1] & 0x03;\n    let operatingMode = \"unknown\";\n    let operatingModeDefinition = \"unknown\";\n    \n    switch(modeCode) {\n        case 0: operatingMode = \"0000\"; operatingModeDefinition = \"off\"; break;\n        case 1: operatingMode = \"0001\"; operatingModeDefinition = \"cool\"; break;\n        case 2: operatingMode = \"0010\"; operatingModeDefinition = \"heat\"; break;\n        case 3: operatingMode = \"0011\"; operatingModeDefinition = \"auto\"; break;\n    }\n    \n    // Decode fan mode (bits 2-3 of byte 1)\n    const fanModeCode = (data[1] >> 2) & 0x03;\n    let fanMode = \"unknown\";\n    let fanModeDefinition = \"unknown\";\n    \n    switch(fanModeCode) {\n        case 0: fanMode = \"00\"; fanModeDefinition = \"auto\"; break;\n        case 1: fanMode = \"01\"; fanModeDefinition = \"low\"; break;\n        case 2: fanMode = \"10\"; fanModeDefinition = \"medium\"; break;\n        case 3: fanMode = \"11\"; fanModeDefinition = \"high\"; break;\n    }\n    \n    // Temperature setpoints come from bytes 2-5\n    // Ambient temperature comes from byte 6-7\n    \n    // Convert byte pairs to temperature in Celsius\n    const coolSetpoint = ((data[2] | (data[3] << 8)) - 273) / 10;\n    const heatSetpoint = ((data[4] | (data[5] << 8)) - 273) / 10;\n    const ambientTemp = ((data[6] | (data[7] << 8)) - 273) / 10;\n    \n    // Convert to Fahrenheit\n    const coolSetpointF = (coolSetpoint * 9/5) + 32;\n    const heatSetpointF = (heatSetpoint * 9/5) + 32;\n    const ambientTempF = (ambientTemp * 9/5) + 32;\n    \n    payload = {\n        dgn: dgn.toString(16).toUpperCase(),\n        name: \"THERMOSTAT_STATUS_1\",\n        instance: instance,\n        \"operating mode\": operatingMode,\n        \"operating mode definition\": operatingModeDefinition,\n        \"fan mode\": fanMode,\n        \"fan mode definition\": fanModeDefinition,\n        \"setpoint temp cool\": coolSetpoint,\n        \"setpoint temp cool F\": coolSetpointF,\n        \"setpoint temp heat\": heatSetpoint,\n        \"setpoint temp heat F\": heatSetpointF,\n        \"ambient temp\": ambientTemp,\n        \"ambient temp F\": ambientTempF,\n        data: Buffer.from(data).toString('hex').toUpperCase(),\n        timestamp: new Date().getTime() / 1000\n    };\n    \n} else if (dgn === THERMOSTAT_STATUS_2) {\n    // Process Thermostat Status 2 message\n    const data = msg.payload.data;\n    const instance = data[0]; // Instance byte\n    \n    // Get schedule mode from byte 1\n    const scheduleMode = data[1] & 0x03;\n    let scheduleModeDefinition = \"unknown\";\n    \n    switch(scheduleMode) {\n        case 0: scheduleModeDefinition = \"disabled\"; break;\n        case 1: scheduleModeDefinition = \"weekday/weekend\"; break;\n        case 2: scheduleModeDefinition = \"seven day\"; break;\n        case 3: scheduleModeDefinition = \"reserved\"; break;\n    }\n    \n    payload = {\n        dgn: dgn.toString(16).toUpperCase(),\n        name: \"THERMOSTAT_STATUS_2\",\n        instance: instance,\n        \"schedule mode\": scheduleMode.toString(2).padStart(2, '0'),\n        \"schedule mode definition\": scheduleModeDefinition,\n        data: Buffer.from(data).toString('hex').toUpperCase(),\n        timestamp: new Date().getTime() / 1000\n    };\n    \n} else if (dgn === AC_STATUS) {\n    // Process AC Status message\n    const data = msg.payload.data;\n    const instance = data[0]; // Instance byte\n    \n    // Get AC operating mode from byte 1\n    const acModeCode = data[1] & 0x0F;\n    let acOperatingMode = \"unknown\";\n    \n    switch(acModeCode) {\n        case 0: acOperatingMode = \"off\"; break;\n        case 1: acOperatingMode = \"cool\"; break;\n        case 2: acOperatingMode = \"heat\"; break;\n        case 3: acOperatingMode = \"auto\"; break;\n        case 4: acOperatingMode = \"fan only\"; break;\n        case 5: acOperatingMode = \"dry\"; break;\n    }\n    \n    // Get fan speed from byte 2\n    const fanSpeed = data[2];\n    \n    payload = {\n        dgn: dgn.toString(16).toUpperCase(),\n        name: \"AC_STATUS\",\n        instance: instance,\n        \"operating mode\": acModeCode.toString(2).padStart(4, '0'),\n        \"operating mode definition\": acOperatingMode,\n        \"fan speed\": fanSpeed,\n        data: Buffer.from(data).toString('hex').toUpperCase(),\n        timestamp: new Date().getTime() / 1000\n    };\n}\n\n// Only pass on relevant messages\nif (payload) {\n    msg.payload = payload;\n    msg.topic = `RVC/${payload.name}/${payload.instance}`;\n    return msg;\n}\n\nreturn null; // Drop non-relevant messages",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 120,
+        "wires": [
+            [
+                "mqtt-out",
+                "debug"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-out",
+        "type": "mqtt out",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "Publish to MQTT",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 550,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "debug",
+        "type": "debug",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "test-inject",
+        "type": "inject",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "Test THERMOSTAT_STATUS_1",
+        "props": [
+            {
+                "p": "payload",
+                "v": "{\"id\":33546953,\"data\":[0,3,19,1,19,1,20,2]}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 170,
+        "y": 200,
+        "wires": [
+            [
+                "rvc-decoder"
+            ]
+        ]
+    },
+    {
+        "id": "test-ac-status",
+        "type": "inject",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "Test AC_STATUS",
+        "props": [
+            {
+                "p": "payload",
+                "v": "{\"id\":33560453,\"data\":[0,1,50,0,0,0,0,0]}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "rvc-decoder"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "RVC MQTT Broker",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "rvc-node-red-client",
+        "autoConnect": true,
+        "usetls": false,
+        "compatmode": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "rv-c-sender",
+        "type": "function",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "RVC Command Encoder",
+        "func": "// Function to generate CAN messages for thermostat control\n// This is used when a command is received from MQTT\n\n// Get the specific command from the MQTT topic\nconst topicParts = msg.topic.split('/');\nif (topicParts.length < 3 || topicParts[0] !== 'RVC' || !topicParts[2]) {\n    // Invalid topic format\n    return null;\n}\n\nconst commandType = topicParts[1]; // e.g., THERMOSTAT_COMMAND_1\nconst instance = parseInt(topicParts[2]) || 0;\n\nlet canMsg = null;\n\nif (commandType === 'THERMOSTAT_COMMAND_1') {\n    // Format a CAN message for thermostat command\n    const payload = msg.payload;\n    \n    // Create data buffer for CAN message\n    const data = Buffer.alloc(8, 0xFF);\n    data[0] = instance; // Set instance\n    \n    // Set operating mode in byte 1 (bits 0-1)\n    if (payload['operating mode']) {\n        const modeMap = {\n            '0000': 0, // off\n            '0001': 1, // cool\n            '0010': 2, // heat\n            '0011': 3  // auto\n        };\n        const modeBits = modeMap[payload['operating mode']] || 0;\n        data[1] = (data[1] & 0xFC) | modeBits; // Keep upper 6 bits, set lower 2\n    }\n    \n    // Set fan mode in byte 1 (bits 2-3)\n    if (payload['fan mode']) {\n        const fanMap = {\n            '00': 0, // auto\n            '01': 1, // low\n            '10': 2, // medium\n            '11': 3  // high\n        };\n        const fanBits = fanMap[payload['fan mode']] || 0;\n        data[1] = (data[1] & 0xF3) | (fanBits << 2); // Keep bits 0-1 and 4-7, set bits 2-3\n    }\n    \n    // Set cool setpoint in bytes 2-3 if provided\n    if (payload['setpoint temp cool'] !== undefined) {\n        // Convert Celsius to RV-C format (0.1K steps, with 0K = -273.15°C)\n        const tempVal = Math.round((payload['setpoint temp cool'] + 273.15) * 10);\n        data[2] = tempVal & 0xFF;\n        data[3] = (tempVal >> 8) & 0xFF;\n    }\n    \n    // Set heat setpoint in bytes 4-5 if provided\n    if (payload['setpoint temp heat'] !== undefined) {\n        // Convert Celsius to RV-C format\n        const tempVal = Math.round((payload['setpoint temp heat'] + 273.15) * 10);\n        data[4] = tempVal & 0xFF;\n        data[5] = (tempVal >> 8) & 0xFF;\n    }\n    \n    // Construct CAN ID for THERMOSTAT_COMMAND_1 (DGN 0x1FEC9)\n    const canId = 0x1FEC9 << 8;\n    \n    canMsg = {\n        id: canId,\n        data: data,\n        ext: true // Extended frame format\n    };\n}\n\nif (canMsg) {\n    msg.payload = canMsg;\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 360,
+        "wires": [
+            [
+                "socketcan-out"
+            ]
+        ]
+    },
+    {
+        "id": "socketcan-out",
+        "type": "socketcan-out",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "Send to CAN Bus",
+        "interface": "can0",
+        "x": 550,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "mqtt-command-in",
+        "type": "mqtt in",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "Receive Commands",
+        "topic": "RVC/+/+/set",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 360,
+        "wires": [
+            [
+                "rv-c-sender"
+            ]
+        ]
+    },
+    {
+        "id": "comment1",
+        "type": "comment",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "CAN Bus Receiver",
+        "info": "",
+        "x": 140,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "comment2",
+        "type": "comment",
+        "z": "rvc-thermostat-ac-flow",
+        "name": "CAN Bus Sender",
+        "info": "",
+        "x": 140,
+        "y": 300,
+        "wires": []
+    }
+]

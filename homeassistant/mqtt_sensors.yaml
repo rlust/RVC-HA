@@ -1,0 +1,145 @@
+# MQTT Sensors Configuration
+
+# Test sensor with simpler configuration - useful for troubleshooting
+- platform: mqtt
+  name: "MQTT Connection Test"
+  state_topic: "homeassistant/status"
+  value_template: "{{ value }}"
+  unique_id: mqtt_connection_test
+  icon: "mdi:connection"
+
+# Water heater sensors - using the correct topic with instance
+- platform: mqtt
+  unique_id: water_heater_electric_level
+  name: "Water Heater Electric Element Level"
+  state_topic: "RVC/WATERHEATER_STATUS_2/1"
+  value_template: >-
+    {% if value_json is defined and value_json is mapping and 'electric element level' in value_json %}
+      {{ value_json['electric element level'] | int(0, 16) }}
+    {% else %}
+      unknown
+    {% endif %}
+  state_class: "measurement"
+  icon: "mdi:lightning-bolt"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hotwaterheater1
+    name: "RV Water Heater"
+    manufacturer: "RVC"
+    model: "RVC Water Heater"
+
+# Water heater max electric element level
+- platform: mqtt
+  unique_id: water_heater_max_electric_level
+  name: "Water Heater Max Electric Level"
+  state_topic: "RVC/WATERHEATER_STATUS_2/1"
+  value_template: >-
+    {% if value_json is defined and value_json is mapping and 'max electric element level' in value_json %}
+      {{ value_json['max electric element level'] | int(0, 16) }}
+    {% else %}
+      unknown
+    {% endif %}
+  state_class: "measurement"
+  icon: "mdi:lightning-bolt-outline"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hotwaterheater1
+    name: "RV Water Heater"
+    manufacturer: "RVC"
+    model: "RVC Water Heater"
+
+# Water heater engine preheat status
+- platform: mqtt
+  unique_id: water_heater_engine_preheat
+  name: "Water Heater Engine Preheat"
+  state_topic: "RVC/WATERHEATER_STATUS_2/1"
+  value_template: >-
+    {% if value_json is defined and value_json is mapping and 'engine preheat definition' in value_json %}
+      {{ value_json['engine preheat definition'] }}
+    {% else %}
+      unknown
+    {% endif %}
+  icon: "mdi:engine"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hotwaterheater1
+    name: "RV Water Heater"
+    manufacturer: "RVC"
+    model: "RVC Water Heater"
+
+# Water heater raw data for debugging
+- platform: mqtt
+  unique_id: water_heater_raw_1
+  name: "Water Heater Raw Data"
+  state_topic: "RVC/WATERHEATER_STATUS_2/1"
+  value_template: "{{ value_json }}"
+  icon: "mdi:code-json"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hotwaterheater1
+    name: "RV Water Heater"
+    manufacturer: "RVC"
+    model: "RVC Water Heater"
+
+# AC Zone 1 sensors - with raw data for troubleshooting
+- platform: mqtt
+  unique_id: ac_zone1_raw
+  name: "AC Zone 1 Raw Data"
+  state_topic: "RVC/AIR_CONDITIONER_STATUS/1"
+  value_template: "{{ value_json }}"
+  icon: "mdi:code-json"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hvac_zone1
+    name: "RV HVAC Zone 1"
+    manufacturer: "RVC"
+    model: "RVC HVAC System"
+
+# AC Zone 2 raw data for troubleshooting
+- platform: mqtt
+  unique_id: ac_zone2_raw
+  name: "AC Zone 2 Raw Data"
+  state_topic: "RVC/AIR_CONDITIONER_STATUS/2"
+  value_template: "{{ value_json }}"
+  icon: "mdi:code-json"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hvac_zone2
+    name: "RV HVAC Zone 2"
+    manufacturer: "RVC"
+    model: "RVC HVAC System"
+
+# AC Zone 3 raw data for troubleshooting
+- platform: mqtt
+  unique_id: ac_zone3_raw
+  name: "AC Zone 3 Raw Data"
+  state_topic: "RVC/AIR_CONDITIONER_STATUS/3"
+  value_template: "{{ value_json }}"
+  icon: "mdi:code-json"
+  qos: 0
+  expire_after: 600
+  force_update: true
+  device:
+    identifiers:
+      - hvac_zone3
+    name: "RV HVAC Zone 3"
+    manufacturer: "RVC"
+    model: "RVC HVAC System"

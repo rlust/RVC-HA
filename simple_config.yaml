@@ -1,0 +1,26 @@
+# Basic configuration
+homeassistant:
+  name: RVC Home Assistant
+  unit_system: imperial
+  time_zone: America/New_York
+
+# Core components
+default_config:
+
+# Include the lights configuration
+light: !include lights.yaml
+
+# Configure logging
+logger:
+  default: info
+  logs:
+    homeassistant.components.mqtt: debug
+
+# MQTT Component
+mqtt:
+  broker: 100.110.189.122 
+  port: 9001
+  username: "rc"
+  password: "rc"
+  client_id: home_assistant
+  discovery: true

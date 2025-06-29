@@ -1,0 +1,28 @@
+Debug log created at 2025-04-04 16:27:56
+[2025-04-04 16:27:56] Initializing MQTT client...
+[2025-04-04 16:27:56] Connecting to broker at 100.110.189.122:9001 using WebSocket...
+[2025-04-04 16:27:56] Successfully connected to MQTT broker
+[2025-04-04 16:27:58] 
+=== MQTT Command Details ===
+[2025-04-04 16:27:58] Action: Turn ON Sink Light (Instance 46)
+[2025-04-04 16:27:58] Broker: 100.110.189.122:9001
+[2025-04-04 16:27:58] Topic: RVC/DC_DIMMER_COMMAND_2/46
+[2025-04-04 16:27:58] Payload: {
+  "command": 19,
+  "command definition": "ramp up",
+  "data": "2EFF6E13FF00FFFF",
+  "delay/duration": 255,
+  "desired level": 55,
+  "dgn": "1FEDB",
+  "group": "11111111",
+  "instance": 46,
+  "interlock": "00",
+  "interlock definition": "no interlock active",
+  "name": "DC_DIMMER_COMMAND_2",
+  "timestamp": "1743798478.801237"
+}
+[2025-04-04 16:27:58] Publishing message to RVC/DC_DIMMER_COMMAND_2/46
+[2025-04-04 16:27:58] Message 1 published successfully
+[2025-04-04 16:27:58] ✓ Command successfully published to RVC/DC_DIMMER_COMMAND_2/46
+[2025-04-04 16:28:00] Disconnected cleanly
+[2025-04-04 16:28:00] Script execution completed

@@ -1,0 +1,30 @@
+# Fan Mode Selectors
+front_thermostat_fan_mode:
+  name: Front Thermostat Fan Mode
+  options:
+    - auto
+    - low
+    - medium
+    - high
+  initial: auto
+  icon: mdi:fan
+
+mid_thermostat_fan_mode:
+  name: Mid Thermostat Fan Mode
+  options:
+    - auto
+    - low
+    - medium
+    - high
+  initial: auto
+  icon: mdi:fan
+
+rear_thermostat_fan_mode:
+  name: Rear Thermostat Fan Mode
+  options:
+    - auto
+    - low
+    - medium
+    - high
+  initial: auto
+  icon: mdi:fan

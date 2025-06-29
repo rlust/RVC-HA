@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "Home Assistant": {
+      "command": "mcp-proxy",
+      "env": {
+        "SSE_URL": "http://100.72.110.22:8123/mcp_server/sse",
+        "API_ACCESS_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyMjBmYjQ5NmVkNmQ0N2I1ODZmMjc2NDc4NTVlNzE0ZSIsImlhdCI6MTc0MzM5OTAwNiwiZXhwIjoyMDU4NzU5MDA2fQ.eQcQIPBV555OuVeAB3pJBpUypbEYNsymwyShOx3b8zo"
+      }
+    ,
+    "Aspire New": {
+      "command": "mcp-proxy",
+      "env": {
+        "SSE_URL": "http://192.168.100.101:8123/mcp_server/sse",
+        "API_ACCESS_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZjkzODQxNjBhN2Y0NjM2YjgzYTNkYTYyYjNlMWY1MiIsImlhdCI6MTc0NTI2MzI1MywiZXhwIjoyMDYwNjIzMjUzfQ.qNueMkpSlP7S0Os18u3yHWKR4rY2a2GkbEqmgpglWGY"
+      }
+    },
+    "postgresql-mcp": {
+      "command": "node",
+      "args": ["/path/to/postgresql-mcp-server/build/index.js", "postgresql://postgres:Rc514131!@hcugmakwghyfvmk.supabase.co:5432/postgres"],
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}

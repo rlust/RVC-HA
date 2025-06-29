@@ -1,0 +1,308 @@
+# Bedroom Area Lights - Using schema: json for MQTT lights
+- schema: json
+  name: "Bed Ceiling A"
+  unique_id: rvc_bed_ceiling_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/25"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/25"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 25, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Bed Ceiling B"
+  unique_id: rvc_bed_ceiling_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/26"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/26"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 26, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Bed Accent"
+  unique_id: rvc_bed_accent
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/27"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/27"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 27, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Bed Vanity"
+  unique_id: rvc_bed_vanity
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/28"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/28"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 28, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Courtesy"
+  unique_id: rvc_courtesy
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/29"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/29"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 29, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "RR Bath Ceiling"
+  unique_id: rvc_rr_bath_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/30"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/30"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 30, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "RR Bath Lav"
+  unique_id: rvc_rr_bath_lav
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/31"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/31"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 31, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "RR Bath Accent"
+  unique_id: rvc_rr_bath_accent
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/32"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/32"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 32, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Mid Bath Ceiling"
+  unique_id: rvc_mid_bath_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/36"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/36"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 36, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+# Living Area Lights
+- schema: json
+  name: "Living Room Ceiling A"
+  unique_id: rvc_livrm_ceiling_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/37"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/37"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 37, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Living Room Ceiling B"
+  unique_id: rvc_livrm_ceiling_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/38"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/38"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 38, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Living Room Accent A"
+  unique_id: rvc_livrm_accent_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/39"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/39"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 39, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Living Room Accent B"
+  unique_id: rvc_livrm_accent_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/40"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/40"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 40, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Sofa Ceiling"
+  unique_id: rvc_sofa_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/41"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/41"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 41, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+# Kitchen Area Lights
+- schema: json
+  name: "Kitchen Ceiling"
+  unique_id: rvc_kitchen_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/42"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/42"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 42, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Dinette"
+  unique_id: rvc_dinette
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/45"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/45"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 45, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Sink"
+  unique_id: rvc_sink
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/46"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/46"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 46, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Midship"
+  unique_id: rvc_midship
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/47"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/47"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 47, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}

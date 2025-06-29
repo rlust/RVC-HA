@@ -1,0 +1,87 @@
+# Bedroom Area Lights - Using schema: json for MQTT lights
+- schema: json
+  name: "Bed Ceiling A"
+  unique_id: rvc_bed_ceiling_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/25"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/25"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 25, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Bed Ceiling B"
+  unique_id: rvc_bed_ceiling_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/26"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/26"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 26, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Bed Accent"
+  unique_id: rvc_bed_accent
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/27"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/27"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 27, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+- schema: json
+  name: "Bed Vanity"
+  unique_id: rvc_bed_vanity
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/28"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/28"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 28, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}
+
+# Just testing with a few items first before building the full config
+# Sink light for testing
+- schema: json
+  name: "Sink"
+  unique_id: rvc_sink
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/46"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/46"
+  optimistic: false
+  brightness: true
+  brightness_scale: 100
+  state_value_template: "{% if value_json['operating status (brightness)']|int > 0 %}ON{% else %}OFF{% endif %}"
+  brightness_value_template: "{{ value_json['operating status (brightness)']|int }}"
+  command_template: >-
+    {"command": {% if state == "ON" %}19{% else %}3{% endif %}, 
+     "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, 
+     "instance": 46, 
+     "desired level": {% if brightness is defined %}{{ brightness }}{% else %}55{% endif %}, 
+     "delay/duration": 255}

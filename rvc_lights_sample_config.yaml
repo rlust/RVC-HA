@@ -1,0 +1,57 @@
+# Sample configuration for RVC Lights component
+# Copy these entries to your configuration.yaml file
+
+# First ensure the MQTT integration is set up in Home Assistant via the UI
+# or with minimal configuration like:
+mqtt:
+
+# Configure the RVC Lights integration
+# Auto-discovery is enabled by default
+rvc_lights:
+  enable_auto_discovery: true  # Optional, defaults to true
+
+# Method 1: Use auto-discovery
+# With auto-discovery enabled, lights will automatically be added when seen on MQTT
+# No manual configuration needed!
+
+# Method 2: Manual configuration
+# You can still manually configure lights if needed:
+light:
+  # Sink Light - Instance 46
+  - platform: rvc_lights
+    name: "Sink Light"
+    unique_id: rvc_sink_light
+    instance: 46
+    default_brightness: 55
+    optimistic: false
+  
+  # Bathroom Light
+  - platform: rvc_lights
+    name: "Bathroom Light"
+    unique_id: rvc_bathroom_light
+    instance: 37
+    default_brightness: 70
+    optimistic: false
+
+# Using the custom services
+# Once installed, you can use these service calls in automations:
+# rvc_lights.toggle
+# rvc_lights.ramp_up
+# rvc_lights.ramp_down
+# rvc_lights.send_command
+
+# Example automation:
+#
+# automation:
+#   - alias: "Turn On All Lights at Sunset"
+#     trigger:
+#       platform: sun
+#       event: sunset
+#     action:
+#       service: rvc_lights.ramp_up
+#       target:
+#         entity_id:
+#           - light.sink_light
+#           - light.bathroom_light
+#       data:
+#         brightness_level: 80

@@ -1,0 +1,483 @@
+climate:
+  # Front Thermostat (Instance 0)
+  - platform: mqtt
+    name: "Front Thermostat"
+    unique_id: rvc_front_thermostat
+    modes:
+      - "off"
+      - "auto"
+      - "cool"
+      - "heat"
+    mode_command_topic: "RVC/THERMOSTAT_COMMAND_1/0"
+    mode_command_template: >-
+      {% set modes = {'off': '0000', 'cool': '0001', 'heat': '0010', 'auto': '0011'} %}
+      {% set mode_code = modes[value] %}
+      {
+        "data": "00FFFFFFFFFAFFFF",
+        "dgn": "1FEF9",
+        "fan mode": "{{ states('input_select.front_thermostat_fan_mode') | default('00') }}",
+        "fan mode definition": "{{ states('input_select.front_thermostat_fan_mode') | default('auto') }}",
+        "fan speed": 50,
+        "instance": 0,
+        "name": "THERMOSTAT_COMMAND_1",
+        "operating mode": "{{ mode_code }}",
+        "operating mode definition": "{{ value }}",
+        "schedule mode": "00",
+        "schedule mode definition": "disabled",
+        "setpoint temp cool": {{ ((states('input_number.front_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp cool F": {{ states('input_number.front_thermostat_cool_temp') | float }},
+        "setpoint temp heat": {{ ((states('input_number.front_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp heat F": {{ states('input_number.front_thermostat_heat_temp') | float }},
+        "timestamp": "{{ now().timestamp() }}"
+      }
+    mode_state_topic: "RVC/THERMOSTAT_STATUS_1/0"
+    mode_state_template: >-
+      {% set mode_codes = {'0000': 'off', '0001': 'cool', '0010': 'heat', '0011': 'auto'} %}
+      {% if value_json is defined and 'operating mode' in value_json %}
+        {{ mode_codes[value_json['operating mode']] }}
+      {% else %}
+        off
+      {% endif %}
+    fan_modes:
+      - "auto"
+      - "low"
+      - "medium"
+      - "high"
+    fan_mode_command_topic: "RVC/THERMOSTAT_COMMAND_1/0"
+    fan_mode_command_template: >-
+      {% set fan_modes = {'auto': '00', 'low': '01', 'medium': '10', 'high': '11'} %}
+      {% set fan_code = fan_modes[value] %}
+      {
+        "data": "00FFFFFFFFFAFFFF",
+        "dgn": "1FEF9",
+        "fan mode": "{{ fan_code }}",
+        "fan mode definition": "{{ value }}",
+        "fan speed": 50,
+        "instance": 0,
+        "name": "THERMOSTAT_COMMAND_1",
+        "operating mode": "{{ states('climate.front_thermostat') == 'off' and '0000' or states('climate.front_thermostat') == 'cool' and '0001' or states('climate.front_thermostat') == 'heat' and '0010' or '0011' }}",
+        "operating mode definition": "{{ states('climate.front_thermostat') }}",
+        "schedule mode": "00",
+        "schedule mode definition": "disabled",
+        "setpoint temp cool": {{ ((states('input_number.front_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp cool F": {{ states('input_number.front_thermostat_cool_temp') | float }},
+        "setpoint temp heat": {{ ((states('input_number.front_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp heat F": {{ states('input_number.front_thermostat_heat_temp') | float }},
+        "timestamp": "{{ now().timestamp() }}"
+      }
+    fan_mode_state_topic: "RVC/THERMOSTAT_STATUS_1/0"
+    fan_mode_state_template: >-
+      {% set fan_modes = {'00': 'auto', '01': 'low', '10': 'medium', '11': 'high'} %}
+      {% if value_json is defined and 'fan mode' in value_json %}
+        {{ fan_modes[value_json['fan mode']] }}
+      {% else %}
+        auto
+      {% endif %}
+    temperature_command_topic: "RVC/THERMOSTAT_COMMAND_1/0"
+    temperature_command_template: >-
+      {% set modes = {'off': '0000', 'cool': '0001', 'heat': '0010', 'auto': '0011'} %}
+      {% set current_mode = states('climate.front_thermostat') %}
+      {% set mode_code = modes[current_mode] %}
+      {% set fan_modes = {'auto': '00', 'low': '01', 'medium': '10', 'high': '11'} %}
+      {% set current_fan = states('climate.front_thermostat_fan_mode') | default('auto') %}
+      {% set fan_code = fan_modes[current_fan] %}
+      {% if current_mode == 'cool' %}
+        {% set setpoint_c = ((value | float) - 32) * (5/9) | round(1) %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 0,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {{ setpoint_c }},
+          "setpoint temp cool F": {{ value }},
+          "setpoint temp heat": {% if current_mode == 'auto' %}{{ ((states('input_number.front_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }}{% else %}"n/a"{% endif %},
+          "setpoint temp heat F": {% if current_mode == 'auto' %}{{ states('input_number.front_thermostat_heat_temp') | float }}{% else %}32{% endif %},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% elif current_mode == 'heat' %}
+        {% set setpoint_c = ((value | float) - 32) * (5/9) | round(1) %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 0,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {% if current_mode == 'auto' %}{{ ((states('input_number.front_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }}{% else %}"n/a"{% endif %},
+          "setpoint temp cool F": {% if current_mode == 'auto' %}{{ states('input_number.front_thermostat_cool_temp') | float }}{% else %}32{% endif %},
+          "setpoint temp heat": {{ setpoint_c }},
+          "setpoint temp heat F": {{ value }},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% else %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 0,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {{ ((states('input_number.front_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+          "setpoint temp cool F": {{ states('input_number.front_thermostat_cool_temp') | float }},
+          "setpoint temp heat": {{ ((states('input_number.front_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+          "setpoint temp heat F": {{ states('input_number.front_thermostat_heat_temp') | float }},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% endif %}
+    min_temp: 60
+    max_temp: 90
+    temp_step: 1
+    temperature_unit: F
+    current_temperature_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/0"
+    current_temperature_template: "{{ value_json['ambient temp F'] }}"
+    precision: 1.0
+    availability_topic: "RVC/THERMOSTAT_STATUS_1/0"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 0
+    retain: false
+    device:
+      identifiers:
+        - rv_thermostat_front
+      name: "RV Front Thermostat"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Mid Thermostat (Instance 1)
+  - platform: mqtt
+    name: "Mid Thermostat"
+    unique_id: rvc_mid_thermostat
+    modes:
+      - "off"
+      - "auto"
+      - "cool"
+      - "heat"
+    mode_command_topic: "RVC/THERMOSTAT_COMMAND_1/1"
+    mode_command_template: >-
+      {% set modes = {'off': '0000', 'cool': '0001', 'heat': '0010', 'auto': '0011'} %}
+      {% set mode_code = modes[value] %}
+      {
+        "data": "00FFFFFFFFFAFFFF",
+        "dgn": "1FEF9",
+        "fan mode": "{{ states('input_select.mid_thermostat_fan_mode') | default('00') }}",
+        "fan mode definition": "{{ states('input_select.mid_thermostat_fan_mode') | default('auto') }}",
+        "fan speed": 50,
+        "instance": 1,
+        "name": "THERMOSTAT_COMMAND_1",
+        "operating mode": "{{ mode_code }}",
+        "operating mode definition": "{{ value }}",
+        "schedule mode": "00",
+        "schedule mode definition": "disabled",
+        "setpoint temp cool": {{ ((states('input_number.mid_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp cool F": {{ states('input_number.mid_thermostat_cool_temp') | float }},
+        "setpoint temp heat": {{ ((states('input_number.mid_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp heat F": {{ states('input_number.mid_thermostat_heat_temp') | float }},
+        "timestamp": "{{ now().timestamp() }}"
+      }
+    mode_state_topic: "RVC/THERMOSTAT_STATUS_1/1"
+    mode_state_template: >-
+      {% set mode_codes = {'0000': 'off', '0001': 'cool', '0010': 'heat', '0011': 'auto'} %}
+      {% if value_json is defined and 'operating mode' in value_json %}
+        {{ mode_codes[value_json['operating mode']] }}
+      {% else %}
+        off
+      {% endif %}
+    fan_modes:
+      - "auto"
+      - "low"
+      - "medium"
+      - "high"
+    fan_mode_command_topic: "RVC/THERMOSTAT_COMMAND_1/1"
+    fan_mode_command_template: >-
+      {% set fan_modes = {'auto': '00', 'low': '01', 'medium': '10', 'high': '11'} %}
+      {% set fan_code = fan_modes[value] %}
+      {
+        "data": "00FFFFFFFFFAFFFF",
+        "dgn": "1FEF9",
+        "fan mode": "{{ fan_code }}",
+        "fan mode definition": "{{ value }}",
+        "fan speed": 50,
+        "instance": 1,
+        "name": "THERMOSTAT_COMMAND_1",
+        "operating mode": "{{ states('climate.mid_thermostat') == 'off' and '0000' or states('climate.mid_thermostat') == 'cool' and '0001' or states('climate.mid_thermostat') == 'heat' and '0010' or '0011' }}",
+        "operating mode definition": "{{ states('climate.mid_thermostat') }}",
+        "schedule mode": "00",
+        "schedule mode definition": "disabled",
+        "setpoint temp cool": {{ ((states('input_number.mid_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp cool F": {{ states('input_number.mid_thermostat_cool_temp') | float }},
+        "setpoint temp heat": {{ ((states('input_number.mid_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp heat F": {{ states('input_number.mid_thermostat_heat_temp') | float }},
+        "timestamp": "{{ now().timestamp() }}"
+      }
+    fan_mode_state_topic: "RVC/THERMOSTAT_STATUS_1/1"
+    fan_mode_state_template: >-
+      {% set fan_modes = {'00': 'auto', '01': 'low', '10': 'medium', '11': 'high'} %}
+      {% if value_json is defined and 'fan mode' in value_json %}
+        {{ fan_modes[value_json['fan mode']] }}
+      {% else %}
+        auto
+      {% endif %}
+    temperature_command_topic: "RVC/THERMOSTAT_COMMAND_1/1"
+    temperature_command_template: >-
+      {% set modes = {'off': '0000', 'cool': '0001', 'heat': '0010', 'auto': '0011'} %}
+      {% set current_mode = states('climate.mid_thermostat') %}
+      {% set mode_code = modes[current_mode] %}
+      {% set fan_modes = {'auto': '00', 'low': '01', 'medium': '10', 'high': '11'} %}
+      {% set current_fan = states('climate.mid_thermostat_fan_mode') | default('auto') %}
+      {% set fan_code = fan_modes[current_fan] %}
+      {% if current_mode == 'cool' %}
+        {% set setpoint_c = ((value | float) - 32) * (5/9) | round(1) %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 1,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {{ setpoint_c }},
+          "setpoint temp cool F": {{ value }},
+          "setpoint temp heat": {% if current_mode == 'auto' %}{{ ((states('input_number.mid_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }}{% else %}"n/a"{% endif %},
+          "setpoint temp heat F": {% if current_mode == 'auto' %}{{ states('input_number.mid_thermostat_heat_temp') | float }}{% else %}32{% endif %},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% elif current_mode == 'heat' %}
+        {% set setpoint_c = ((value | float) - 32) * (5/9) | round(1) %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 1,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {% if current_mode == 'auto' %}{{ ((states('input_number.mid_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }}{% else %}"n/a"{% endif %},
+          "setpoint temp cool F": {% if current_mode == 'auto' %}{{ states('input_number.mid_thermostat_cool_temp') | float }}{% else %}32{% endif %},
+          "setpoint temp heat": {{ setpoint_c }},
+          "setpoint temp heat F": {{ value }},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% else %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 1,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {{ ((states('input_number.mid_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+          "setpoint temp cool F": {{ states('input_number.mid_thermostat_cool_temp') | float }},
+          "setpoint temp heat": {{ ((states('input_number.mid_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+          "setpoint temp heat F": {{ states('input_number.mid_thermostat_heat_temp') | float }},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% endif %}
+    min_temp: 60
+    max_temp: 90
+    temp_step: 1
+    temperature_unit: F
+    current_temperature_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/1"
+    current_temperature_template: "{{ value_json['ambient temp F'] }}"
+    precision: 1.0
+    availability_topic: "RVC/THERMOSTAT_STATUS_1/1"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 0
+    retain: false
+    device:
+      identifiers:
+        - rv_thermostat_mid
+      name: "RV Mid Thermostat"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"
+
+  # Rear Thermostat (Instance 2)
+  - platform: mqtt
+    name: "Rear Thermostat"
+    unique_id: rvc_rear_thermostat
+    modes:
+      - "off"
+      - "auto"
+      - "cool"
+      - "heat"
+    mode_command_topic: "RVC/THERMOSTAT_COMMAND_1/2"
+    mode_command_template: >-
+      {% set modes = {'off': '0000', 'cool': '0001', 'heat': '0010', 'auto': '0011'} %}
+      {% set mode_code = modes[value] %}
+      {
+        "data": "00FFFFFFFFFAFFFF",
+        "dgn": "1FEF9",
+        "fan mode": "{{ states('input_select.rear_thermostat_fan_mode') | default('00') }}",
+        "fan mode definition": "{{ states('input_select.rear_thermostat_fan_mode') | default('auto') }}",
+        "fan speed": 50,
+        "instance": 2,
+        "name": "THERMOSTAT_COMMAND_1",
+        "operating mode": "{{ mode_code }}",
+        "operating mode definition": "{{ value }}",
+        "schedule mode": "00",
+        "schedule mode definition": "disabled",
+        "setpoint temp cool": {{ ((states('input_number.rear_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp cool F": {{ states('input_number.rear_thermostat_cool_temp') | float }},
+        "setpoint temp heat": {{ ((states('input_number.rear_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp heat F": {{ states('input_number.rear_thermostat_heat_temp') | float }},
+        "timestamp": "{{ now().timestamp() }}"
+      }
+    mode_state_topic: "RVC/THERMOSTAT_STATUS_1/2"
+    mode_state_template: >-
+      {% set mode_codes = {'0000': 'off', '0001': 'cool', '0010': 'heat', '0011': 'auto'} %}
+      {% if value_json is defined and 'operating mode' in value_json %}
+        {{ mode_codes[value_json['operating mode']] }}
+      {% else %}
+        off
+      {% endif %}
+    fan_modes:
+      - "auto"
+      - "low"
+      - "medium"
+      - "high"
+    fan_mode_command_topic: "RVC/THERMOSTAT_COMMAND_1/2"
+    fan_mode_command_template: >-
+      {% set fan_modes = {'auto': '00', 'low': '01', 'medium': '10', 'high': '11'} %}
+      {% set fan_code = fan_modes[value] %}
+      {
+        "data": "00FFFFFFFFFAFFFF",
+        "dgn": "1FEF9",
+        "fan mode": "{{ fan_code }}",
+        "fan mode definition": "{{ value }}",
+        "fan speed": 50,
+        "instance": 2,
+        "name": "THERMOSTAT_COMMAND_1",
+        "operating mode": "{{ states('climate.rear_thermostat') == 'off' and '0000' or states('climate.rear_thermostat') == 'cool' and '0001' or states('climate.rear_thermostat') == 'heat' and '0010' or '0011' }}",
+        "operating mode definition": "{{ states('climate.rear_thermostat') }}",
+        "schedule mode": "00",
+        "schedule mode definition": "disabled",
+        "setpoint temp cool": {{ ((states('input_number.rear_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp cool F": {{ states('input_number.rear_thermostat_cool_temp') | float }},
+        "setpoint temp heat": {{ ((states('input_number.rear_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+        "setpoint temp heat F": {{ states('input_number.rear_thermostat_heat_temp') | float }},
+        "timestamp": "{{ now().timestamp() }}"
+      }
+    fan_mode_state_topic: "RVC/THERMOSTAT_STATUS_1/2"
+    fan_mode_state_template: >-
+      {% set fan_modes = {'00': 'auto', '01': 'low', '10': 'medium', '11': 'high'} %}
+      {% if value_json is defined and 'fan mode' in value_json %}
+        {{ fan_modes[value_json['fan mode']] }}
+      {% else %}
+        auto
+      {% endif %}
+    temperature_command_topic: "RVC/THERMOSTAT_COMMAND_1/2"
+    temperature_command_template: >-
+      {% set modes = {'off': '0000', 'cool': '0001', 'heat': '0010', 'auto': '0011'} %}
+      {% set current_mode = states('climate.rear_thermostat') %}
+      {% set mode_code = modes[current_mode] %}
+      {% set fan_modes = {'auto': '00', 'low': '01', 'medium': '10', 'high': '11'} %}
+      {% set current_fan = states('climate.rear_thermostat_fan_mode') | default('auto') %}
+      {% set fan_code = fan_modes[current_fan] %}
+      {% if current_mode == 'cool' %}
+        {% set setpoint_c = ((value | float) - 32) * (5/9) | round(1) %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 2,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {{ setpoint_c }},
+          "setpoint temp cool F": {{ value }},
+          "setpoint temp heat": {% if current_mode == 'auto' %}{{ ((states('input_number.rear_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }}{% else %}"n/a"{% endif %},
+          "setpoint temp heat F": {% if current_mode == 'auto' %}{{ states('input_number.rear_thermostat_heat_temp') | float }}{% else %}32{% endif %},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% elif current_mode == 'heat' %}
+        {% set setpoint_c = ((value | float) - 32) * (5/9) | round(1) %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 2,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {% if current_mode == 'auto' %}{{ ((states('input_number.rear_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }}{% else %}"n/a"{% endif %},
+          "setpoint temp cool F": {% if current_mode == 'auto' %}{{ states('input_number.rear_thermostat_cool_temp') | float }}{% else %}32{% endif %},
+          "setpoint temp heat": {{ setpoint_c }},
+          "setpoint temp heat F": {{ value }},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% else %}
+        {
+          "data": "00FFFFFFFFFAFFFF",
+          "dgn": "1FEF9",
+          "fan mode": "{{ fan_code }}",
+          "fan mode definition": "{{ current_fan }}",
+          "fan speed": 50,
+          "instance": 2,
+          "name": "THERMOSTAT_COMMAND_1",
+          "operating mode": "{{ mode_code }}",
+          "operating mode definition": "{{ current_mode }}",
+          "schedule mode": "00",
+          "schedule mode definition": "disabled",
+          "setpoint temp cool": {{ ((states('input_number.rear_thermostat_cool_temp') | float) - 32) * (5/9) | round(1) }},
+          "setpoint temp cool F": {{ states('input_number.rear_thermostat_cool_temp') | float }},
+          "setpoint temp heat": {{ ((states('input_number.rear_thermostat_heat_temp') | float) - 32) * (5/9) | round(1) }},
+          "setpoint temp heat F": {{ states('input_number.rear_thermostat_heat_temp') | float }},
+          "timestamp": "{{ now().timestamp() }}"
+        }
+      {% endif %}
+    min_temp: 60
+    max_temp: 90
+    temp_step: 1
+    temperature_unit: F
+    current_temperature_topic: "RVC/THERMOSTAT_AMBIENT_STATUS/2"
+    current_temperature_template: "{{ value_json['ambient temp F'] }}"
+    precision: 1.0
+    availability_topic: "RVC/THERMOSTAT_STATUS_1/2"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 0
+    retain: false
+    device:
+      identifiers:
+        - rv_thermostat_rear
+      name: "RV Rear Thermostat"
+      manufacturer: "RVC"
+      model: "RVC Thermostat System"

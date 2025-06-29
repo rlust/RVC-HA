@@ -1,0 +1,108 @@
+title: RV Thermostats
+views:
+  - title: Thermostats
+    path: rv-thermostats
+    icon: mdi:thermometer
+    badges: []
+    cards:
+      - type: vertical-stack
+        title: Front Thermostat
+        cards:
+          - type: thermostat
+            entity: climate.front_thermostat
+            name: Front AC
+          - type: entities
+            entities:
+              - entity: sensor.front_thermostat_temperature
+                name: Current Temperature
+              - entity: input_number.front_thermostat_cool_temp
+                name: Cool Setpoint
+              - entity: input_number.front_thermostat_heat_temp
+                name: Heat Setpoint
+              - entity: input_select.front_thermostat_fan_mode
+                name: Fan Mode
+            title: Front Thermostat Controls
+            show_header_toggle: false
+          - type: button
+            tap_action:
+              action: call-service
+              service: climate.set_temperature
+              service_data:
+                entity_id: climate.front_thermostat
+                temperature: 82
+                hvac_mode: cool
+              target: {}
+            entity: climate.front_thermostat
+            icon: mdi:snowflake
+            name: Set Cool 82°F Auto Fan
+            show_state: false
+            show_icon: true
+            icon_height: 40px
+
+      - type: vertical-stack
+        title: Mid Thermostat
+        cards:
+          - type: thermostat
+            entity: climate.mid_thermostat
+            name: Mid AC
+          - type: entities
+            entities:
+              - entity: sensor.mid_thermostat_temperature_f
+                name: Current Temperature
+              - entity: input_number.mid_thermostat_cool_temp
+                name: Cool Setpoint
+              - entity: input_number.mid_thermostat_heat_temp
+                name: Heat Setpoint
+              - entity: input_select.mid_thermostat_fan_mode
+                name: Fan Mode
+            title: Mid Thermostat Controls
+            show_header_toggle: false
+          - type: button
+            tap_action:
+              action: call-service
+              service: climate.set_temperature
+              service_data:
+                entity_id: climate.mid_thermostat
+                temperature: 82
+                hvac_mode: cool
+              target: {}
+            entity: climate.mid_thermostat
+            icon: mdi:snowflake
+            name: Set Cool 82°F Auto Fan
+            show_state: false
+            show_icon: true
+            icon_height: 40px
+
+      - type: vertical-stack
+        title: Rear Thermostat
+        cards:
+          - type: thermostat
+            entity: climate.rear_thermostat
+            name: Rear AC
+          - type: entities
+            entities:
+              - entity: sensor.rear_thermostat_temperature_f
+                name: Current Temperature
+              - entity: input_number.rear_thermostat_cool_temp
+                name: Cool Setpoint
+              - entity: input_number.rear_thermostat_heat_temp
+                name: Heat Setpoint
+              - entity: input_select.rear_thermostat_fan_mode
+                name: Fan Mode
+            title: Rear Thermostat Controls
+            show_header_toggle: false
+          - type: button
+            tap_action:
+              action: call-service
+              service: climate.set_temperature
+              service_data:
+                entity_id: climate.rear_thermostat
+                temperature: 82
+                hvac_mode: cool
+              target: {}
+            entity: climate.rear_thermostat
+            icon: mdi:snowflake
+            name: Set Cool 82°F Auto Fan
+            show_state: false
+            show_icon: true
+            icon_height: 40px

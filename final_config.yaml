@@ -1,0 +1,22 @@
+# Basic configuration
+homeassistant:
+  name: RVC Home Assistant
+  unit_system: imperial
+  time_zone: America/New_York
+
+# Core components
+default_config:
+
+# Include the lights configuration
+light: !include lights.yaml
+
+# Configure logging
+logger:
+  default: info
+  logs:
+    homeassistant.components.mqtt: debug
+
+# MQTT Component - Directly included
+mqtt:
+
+# Customize MQTT connection in secrets.yaml

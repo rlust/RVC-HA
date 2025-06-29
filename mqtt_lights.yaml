@@ -1,0 +1,4 @@
+# Define the mqtt light platform first
+mqtt: !include mqtt.yaml
+# Then include the individual lights
+light: !include lights.yaml

@@ -1,0 +1,255 @@
+# Bedroom Area Lights
+- name: "Bed Ceiling A"
+  unique_id: rvc_bed_ceiling_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/25"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/25"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 19, "command definition": "ramp up", "instance": 25, "desired level": {{ brightness }}, "delay/duration": 255}
+    {% else %}
+      {"command": {% if state == "ON" %}19{% else %}3{% endif %}, "command definition": {% if state == "ON" %}"ramp up"{% else %}"off"{% endif %}, "instance": 25, "desired level": 55, "delay/duration": 255}
+    {% endif %}
+
+- name: "Bed Ceiling B"
+  unique_id: rvc_bed_ceiling_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/26"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/26"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 26, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 26}
+    {% endif %}
+
+- name: "Bed Accent"
+  unique_id: rvc_bed_accent
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/27"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/27"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 27, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 27}
+    {% endif %}
+
+- name: "Bed Vanity"
+  unique_id: rvc_bed_vanity
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/28"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/28"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 28, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 28}
+    {% endif %}
+
+- name: "Courtesy"
+  unique_id: rvc_courtesy
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/29"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/29"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 29, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 29}
+    {% endif %}
+
+# Bathroom Lights
+- name: "RR Bath Ceiling"
+  unique_id: rvc_rr_bath_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/30"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/30"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 30, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 30}
+    {% endif %}
+
+- name: "RR Bath Lav Lights"
+  unique_id: rvc_rr_bath_lav
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/31"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/31"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 31, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 31}
+    {% endif %}
+
+- name: "RR Bath Accent"
+  unique_id: rvc_rr_bath_accent
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/32"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/32"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 32, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 32}
+    {% endif %}
+
+- name: "Mid Bath Ceiling"
+  unique_id: rvc_mid_bath_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/33"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/33"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 33, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 33}
+    {% endif %}
+
+# Living Room Lights
+- name: "Living Room Ceiling A"
+  unique_id: rvc_livrm_ceiling_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/37"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/37"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 37, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 37}
+    {% endif %}
+
+- name: "Living Room Ceiling B"
+  unique_id: rvc_livrm_ceiling_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/38"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/38"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 38, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 38}
+    {% endif %}
+
+- name: "Living Room Accent A"
+  unique_id: rvc_livrm_accent_a
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/39"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/39"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 39, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 39}
+    {% endif %}
+
+- name: "Living Room Accent B"
+  unique_id: rvc_livrm_accent_b
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/40"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/40"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 40, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 40}
+    {% endif %}
+
+- name: "Sofa Ceiling"
+  unique_id: rvc_sofa_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/41"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/41"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 41, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 41}
+    {% endif %}
+
+# Kitchen Area Lights
+- name: "Kitchen Ceiling"
+  unique_id: rvc_kitchen_ceiling
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/42"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/42"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 42, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 42}
+    {% endif %}
+
+- name: "Dinette"
+  unique_id: rvc_dinette
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/45"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/45"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 45, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 45}
+    {% endif %}
+
+- name: "Sink"
+  unique_id: rvc_sink
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/46"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/46"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 46, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 46}
+    {% endif %}
+
+- name: "Midship"
+  unique_id: rvc_midship
+  command_topic: "RVC/DC_DIMMER_COMMAND_2/47"
+  state_topic: "RVC/DC_DIMMER_STATUS_3/47"
+  optimistic: true
+  brightness: true
+  brightness_scale: 100
+  command_template: >
+    {% if brightness is defined %}
+      {"command": 0, "instance": 47, "brightness": {{ brightness }}}
+    {% else %}
+      {"command": {% if state == "ON" %}1{% else %}3{% endif %}, "instance": 47}
+    {% endif %}
