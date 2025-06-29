@@ -3,7 +3,7 @@ import logging
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import CONF_DEVICES, Platform
@@ -24,43 +24,38 @@ CONFIG_SCHEMA = vol.Schema(
 PLATFORMS = [Platform.LIGHT]
 
 async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the RVC Lights component."""
-    hass.data.setdefault(DOMAIN, {})
-    
-    # Extract configuration
+    """Set up the RVC Lights component from YAML."""
     if DOMAIN in config:
-        conf = config[DOMAIN]
-        enable_auto_discovery = conf.get(CONF_ENABLE_AUTO_DISCOVERY, True)
-    else:
-        enable_auto_discovery = True
-    
-    # Store configuration in hass.data for access by platform
-    hass.data[DOMAIN] = {
-        CONF_ENABLE_AUTO_DISCOVERY: enable_auto_discovery
-    }
-    
-    _LOGGER.info(f"Setting up RVC Lights component with auto-discovery: {enable_auto_discovery}")
-    
-    # Load the light platform using the recommended approach
-    await hass.async_add_executor_job(
-        hass.helpers.discovery.load_platform,
-        "light", DOMAIN, {}, config
-    )
-    
-    # Start discovery if enabled
-    if enable_auto_discovery:
-        _LOGGER.info("Starting RVC Lights auto-discovery")
-        await async_start_discovery(hass)
-    
-    # Register component services
-    await async_setup_services(hass)
-    
+        # Create a config entry from the YAML configuration.
+        # This will trigger async_setup_entry.
+        if not hass.config_entries.async_entries(DOMAIN):
+            hass.async_create_task(
+                hass.config_entries.flow.async_init(
+                    DOMAIN,
+                    context={"source": SOURCE_IMPORT},
+                    data=config[DOMAIN],
+                )
+            )
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up RVC Lights from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
+
+    # Perform one-time setup for services and discovery
+    if "setup_complete" not in hass.data[DOMAIN]:
+        _LOGGER.debug("Performing one-time setup for RVC Lights")
+        
+        enable_auto_discovery = entry.data.get(CONF_ENABLE_AUTO_DISCOVERY, True)
+        
+        if enable_auto_discovery:
+            _LOGGER.info("Starting RVC Lights auto-discovery")
+            await async_start_discovery(hass)
+        
+        await async_setup_services(hass)
+        
+        hass.data[DOMAIN]["setup_complete"] = True
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

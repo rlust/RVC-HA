@@ -25,7 +25,7 @@ from homeassistant.core import HomeAssistant, callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.config_entries import ConfigEntry
 
 from .const import (
     DOMAIN,
@@ -50,32 +50,24 @@ from .discovery import DISCOVERY_SIGNAL
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_NAME): cv.string,
-        vol.Required(CONF_UNIQUE_ID): cv.string,
-        vol.Required("instance"): cv.positive_int,
-        vol.Optional(CONF_OPTIMISTIC, default=False): cv.boolean,
-        vol.Optional("default_brightness", default=DEFAULT_BRIGHTNESS): cv.positive_int,
-    }
-)
 
-async def async_setup_platform(
+
+async def async_setup_entry(
     hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: Optional[DiscoveryInfoType] = None,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the RVC Lights platform."""
+    """Set up the RVC Lights from a config entry."""
     # Track the discovered lights to avoid duplicates
     discovered_lights = set()
-    lights = []
     
-    _LOGGER.info(f"Setting up RVC Lights platform with discovery_info: {discovery_info}")
+    _LOGGER.info("Setting up RVC Lights platform from config entry")
     
-    # Get component config
-    component_config = hass.data.get(DOMAIN, {})
+    # Get component config from the entry
+    component_config = config_entry.data
     enable_auto_discovery = component_config.get(CONF_ENABLE_AUTO_DISCOVERY, True)
+    
+    lights_to_add = []
     
     # Register all predefined RVC lights
     for instance, name in RVC_LIGHTS.items():
@@ -87,110 +79,54 @@ async def async_setup_platform(
             name,
             f"rvc_light_{instance}",
             instance,
-            False,
+            False,  # optimistic
             DEFAULT_BRIGHTNESS,
         )
         
-        lights.append(light)
+        lights_to_add.append(light)
         discovered_lights.add(instance)
         _LOGGER.info(f"Registered predefined RVC light: {name} (instance {instance})")
         
-    # Handle manual configuration
-    if not discovery_info and CONF_NAME in config and "instance" in config:
-        instance = config["instance"]
-        if instance not in discovered_lights:
-            light = RvcLight(
-                config[CONF_NAME],
-                config.get(CONF_UNIQUE_ID, f"rvc_light_{instance}"),
-                instance,
-                config.get(CONF_OPTIMISTIC, False),
-                config.get("default_brightness", DEFAULT_BRIGHTNESS),
-            )
-            
-            lights.append(light)
-            discovered_lights.add(instance)
-            _LOGGER.info(f"Added manually configured RVC light: {config[CONF_NAME]} (instance {instance})")
-    
-    # Add all created entities
-    if lights:
-        add_entities(lights)
+    if lights_to_add:
+        async_add_entities(lights_to_add)
     
     # Only set up discovery if enabled
     if enable_auto_discovery:
         # Process discovered devices
         @callback
-        def async_discover_device(discovery_info):
+        def async_discover_device(discovery_info: dict):
             """Discover and add a RVC light."""
-            instance = discovery_info["instance"]
-            
+            instance = discovery_info.get("instance")
+            if not instance:
+                _LOGGER.warning(f"Discovered RVC light with no instance: {discovery_info}")
+                return
+
             # Skip if this instance was already added
             if instance in discovered_lights:
+                _LOGGER.debug(f"Skipping already discovered RVC light instance {instance}")
                 return
                 
+            _LOGGER.info(f"Discovered new RVC light instance {instance}")
             # Create the light entity
             light = RvcLight(
-                discovery_info[CONF_NAME],
-                discovery_info[CONF_UNIQUE_ID],
+                discovery_info.get(CONF_NAME, f"RVC Light {instance}"),
+                discovery_info.get(CONF_UNIQUE_ID, f"rvc_light_{instance}"),
                 instance,
                 discovery_info.get(CONF_OPTIMISTIC, False),
                 discovery_info.get("default_brightness", DEFAULT_BRIGHTNESS),
             )
             
-            add_entities([light])
+            async_add_entities([light])
             discovered_lights.add(instance)
-            _LOGGER.info(f"Added discovered RVC light instance {instance}")
+            _LOGGER.info(f"Added discovered RVC light: {light.name}")
         
-        # Subscribe to discovery events
-        async_dispatcher_connect(
-            hass, DISCOVERY_SIGNAL, async_discover_device
+        # Subscribe to discovery events and ensure cleanup on unload
+        config_entry.async_on_unload(
+            async_dispatcher_connect(
+                hass, DISCOVERY_SIGNAL, async_discover_device
+            )
         )
-    
-    # Register custom services
-    async def handle_toggle_service(call):
-        """Handle the toggle service call."""
-        entity_ids = call.data.get("entity_id")
-        entities = [entity for entity in lights if entity.entity_id in entity_ids] if entity_ids else lights
-        
-        for light in entities:
-            await light.async_toggle()
-    
-    async def handle_ramp_up_service(call):
-        """Handle the ramp up service call."""
-        entity_ids = call.data.get("entity_id")
-        entities = [entity for entity in lights if entity.entity_id in entity_ids] if entity_ids else lights
-        
-        for light in entities:
-            await light.async_ramp_up()
-            
-    async def handle_ramp_down_service(call):
-        """Handle the ramp down service call."""
-        entity_ids = call.data.get("entity_id")
-        entities = [entity for entity in lights if entity.entity_id in entity_ids] if entity_ids else lights
-        
-        for light in entities:
-            await light.async_ramp_down()
-            
-    async def handle_stop_ramp_service(call):
-        """Handle the stop ramping service call."""
-        entity_ids = call.data.get("entity_id")
-        entities = [entity for entity in lights if entity.entity_id in entity_ids] if entity_ids else lights
-        
-        for light in entities:
-            await light.async_stop_ramp()
-    
-    # Register the custom services
-    hass.services.async_register(
-        DOMAIN, "toggle", handle_toggle_service, schema=cv.make_entity_service_schema({})
-    )
-    hass.services.async_register(
-        DOMAIN, "ramp_up", handle_ramp_up_service, schema=cv.make_entity_service_schema({})
-    )
-    hass.services.async_register(
-        DOMAIN, "ramp_down", handle_ramp_down_service, schema=cv.make_entity_service_schema({})
-    )
-    hass.services.async_register(
-        DOMAIN, "stop_ramp", handle_stop_ramp_service, schema=cv.make_entity_service_schema({})
-    )
+        _LOGGER.info("RVC Lights discovery setup complete.")
 
 class RvcLight(LightEntity):
     """Representation of an RVC Light."""
