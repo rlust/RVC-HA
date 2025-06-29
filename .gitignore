@@ -65,3 +65,30 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Home Assistant Core
+/homeassistant/.HA_VERSION
+/homeassistant/secrets.yaml
+/homeassistant/home-assistant.log
+/homeassistant/home-assistant.log.*
+/homeassistant/home-assistant_v2.db
+/homeassistant/home-assistant_v2.db-*
+
+# Home Assistant Storage, Backups, and Logs
+/homeassistant/.storage/
+/homeassistant/backups/
+*.log
+logs/
+mosquitto/log/
+
+# HACS & Community Components
+/homeassistant/custom_components/hacs/
+/homeassistant/www/community/
+
+# Large Files
+*.pdf
+
+# Node.js
+node_modules/
+package-lock.json
+
